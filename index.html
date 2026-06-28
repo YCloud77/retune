@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<title>RETUNE</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#050510;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:'Hiragino Sans','Helvetica Neue',sans-serif;overflow:hidden;color:#e8e8ff}
+#wrap{position:relative;width:100vw;height:100vh;max-width:440px;max-height:900px}
+canvas{display:block;width:100%!important;height:100%!important;position:absolute;top:0;left:0}
+#c3d{z-index:1}
+#c2d{z-index:2;opacity:0;transition:opacity 1s}
+
+/* overlays */
+.screen{position:absolute;inset:0;z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(120% 90% at 50% 35%,#10102a 0%,#070712 60%,#050510 100%);text-align:center;padding:32px 26px}
+.hidden{display:none!important}
+.fade-out{animation:fo 1s forwards}
+@keyframes fo{to{opacity:0;visibility:hidden}}
+
+/* title */
+#title h1{font-size:34px;letter-spacing:0.42em;font-weight:200;color:#cfcff5;opacity:0;text-indent:0.42em;
+  text-shadow:0 0 30px rgba(120,120,220,0.35);animation:ti 3.2s ease forwards}
+@keyframes ti{0%{opacity:0;letter-spacing:0.7em}100%{opacity:1;letter-spacing:0.42em}}
+#title .hint{margin-top:40px;font-size:12px;letter-spacing:0.25em;color:#6a6a90;opacity:0;animation:hb 2.4s ease 2.6s infinite}
+@keyframes hb{0%,100%{opacity:0.25}50%{opacity:0.7}}
+#title .langs{position:absolute;top:26px;right:22px;display:flex;gap:8px}
+.lang-btn{font-size:11px;letter-spacing:0.15em;color:#7a7aa0;border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:5px 12px;background:transparent;cursor:pointer}
+.lang-btn.on{color:#dcdcff;border-color:rgba(170,170,255,0.5);background:rgba(120,120,220,0.12)}
+
+/* legal */
+#legal{justify-content:flex-start;padding-top:46px}
+#legal h2{font-size:15px;letter-spacing:0.18em;color:#bfbfe8;font-weight:400;margin-bottom:14px}
+#ldoc{width:100%;max-width:380px;height:46vh;overflow-y:auto;text-align:left;font-size:12.5px;line-height:1.95;color:#b8b8d4;
+  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px 16px;-webkit-overflow-scrolling:touch}
+#ldoc h3{font-size:13px;color:#dadaf5;margin:14px 0 4px;letter-spacing:0.06em}
+#ldoc h3:first-child{margin-top:0}
+#ldoc .warn{color:#ffd9b0;font-weight:600}
+#ldoc .end{margin-top:16px;text-align:center;color:#55557a;font-size:11px;letter-spacing:0.2em}
+#safety{max-width:380px;margin-top:16px;font-size:12.5px;line-height:1.7;color:#ffcfa6;
+  border:1px solid rgba(255,180,120,0.28);border-radius:12px;padding:12px 14px;background:rgba(255,150,80,0.06)}
+.consent{display:flex;align-items:center;gap:10px;margin-top:16px;font-size:13px;color:#c8c8e4;cursor:pointer;max-width:380px}
+.consent input{width:20px;height:20px;accent-color:#8a8ad8;flex:0 0 auto}
+.consent.disabled{opacity:0.4;pointer-events:none}
+#scrollnote{margin-top:8px;font-size:11px;color:#6a6a90;letter-spacing:0.12em}
+.primary{margin-top:18px;font-size:14px;letter-spacing:0.22em;color:#0c0c18;background:linear-gradient(90deg,#9a9ae0,#b9b9f0);
+  border:none;border-radius:26px;padding:13px 44px;cursor:pointer;font-weight:600;transition:opacity .3s}
+.primary:disabled{opacity:0.3;cursor:default}
+
+/* loading (during experience start if model not ready) */
+#loading{position:absolute;inset:0;z-index:55;display:none;flex-direction:column;align-items:center;justify-content:center;background:#050510}
+#lt{font-size:13px;color:#5a5a80;letter-spacing:0.2em}
+#lb{width:160px;height:2px;background:#1a1a28;border-radius:2px;margin-top:14px;overflow:hidden}
+#lf{height:100%;width:0%;background:linear-gradient(90deg,#4a4a70,#8080b0);border-radius:2px;transition:width .3s}
+
+/* experience HUD */
+#nar{position:absolute;bottom:120px;left:20px;right:20px;text-align:center;pointer-events:none;z-index:30;opacity:0;transition:opacity .8s}
+#nt{font-size:16px;line-height:1.9;color:rgba(238,238,255,0.94);font-weight:300;letter-spacing:0.03em;text-shadow:0 0 18px #000,0 0 42px rgba(0,0,0,0.85)}
+#nt .q{color:#ffe9c4;font-weight:400}
+#hud{position:absolute;bottom:30px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none;z-index:30;opacity:0;transition:opacity .6s}
+#sl{font-size:9px;letter-spacing:0.25em;color:#5a5a72;text-transform:uppercase}
+#pb{width:200px;height:2px;background:#1a1a28;border-radius:2px;overflow:hidden}
+#pf{height:100%;background:linear-gradient(90deg,#5a5a82,#8a8ac0);width:0%;border-radius:2px}
+#tl{font-size:10px;letter-spacing:0.18em;color:#3a3a50}
+#ctrl{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);z-index:40;display:none;gap:10px}
+#ctrl button{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.4);font-size:11px;letter-spacing:0.12em;padding:7px 18px;border-radius:24px;cursor:pointer}
+
+/* end */
+#end{z-index:62}
+#end .msg{font-size:17px;letter-spacing:0.12em;color:#d8d8f5;font-weight:300;line-height:1.9}
+#end .again{margin-top:30px}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="c3d"></canvas>
+  <canvas id="c2d"></canvas>
+
+  <!-- Pre-0 Title -->
+  <div id="title" class="screen">
+    <div class="langs"><button class="lang-btn" data-l="ja">日本語</button><button class="lang-btn" data-l="en">EN</button></div>
+    <h1>RETUNE</h1>
+    <div class="hint" id="titleHint">tap to begin</div>
+  </div>
+
+  <!-- Pre-1 Legal / consent -->
+  <div id="legal" class="screen hidden">
+    <h2 id="legalH">ご利用の前に</h2>
+    <div id="ldoc"></div>
+    <div id="scrollnote"></div>
+    <label class="consent disabled" id="consentRow"><input type="checkbox" id="agree"><span id="agreeLabel"></span></label>
+    <div id="safety"></div>
+    <button class="primary" id="startBtn" disabled></button>
+  </div>
+
+  <!-- experience -->
+  <div id="loading"><div id="lt">RETUNE</div><div id="lb"><div id="lf"></div></div></div>
+  <div id="nar"><div id="nt"></div></div>
+  <div id="hud"><div id="sl">RETUNE</div><div id="pb"><div id="pf"></div></div><div id="tl">0:00</div></div>
+
+  <!-- end -->
+  <div id="end" class="screen hidden"><div class="msg" id="endMsg"></div><button class="primary again" id="againBtn"></button></div>
+</div>
+<div id="ctrl"><button id="bp"></button><button id="br"></button></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/fflate.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/curves/NURBSCurve.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
+<script>
+// ═══════════════════════════════════════════════
+// RETUNE v5
+//   title → legal/consent → 🔔 → 6 scenes (180s) → 🔔 → end
+//   defensive: every Three.js write in try-catch, .set() for vec3
+// ═══════════════════════════════════════════════
+
+var TOTAL=180;
+
+// ── i18n ────────────────────────────────────────
+var LANG=(navigator.language||'ja').toLowerCase().indexOf('ja')===0?'ja':'en';
+
+// To use pre-recorded narration, drop files at audio/<lang>/<id>.mp3 and set AUDIO_BASE='audio'.
+// While null, the app falls back to Web Speech API (dev only — final product should use neural TTS files).
+var AUDIO_BASE=null;
+
+var UI={
+  ja:{ titleHint:'タップして始める', legalH:'ご利用の前に',
+    agree:'上記の利用規約・免責事項に同意します',
+    scrollHint:'↓ 最後までスクロールしてお読みください',
+    scrollDone:'読み終わりました',
+    start:'はじめる',
+    safety:'⚠ 運転中・歩行中・作業中など、注意が必要な状況では絶対に行わないでください。安全で楽な姿勢が取れる場所で行ってください。',
+    end:'おつかれさまでした。\n静かに、整いました。', again:'もう一度', pause:'⏸', resume:'▶', exit:'✕' },
+  en:{ titleHint:'tap to begin', legalH:'Before you begin',
+    agree:'I agree to the Terms and Disclaimer above',
+    scrollHint:'↓ Please scroll and read to the end',
+    scrollDone:'Thank you for reading',
+    start:'Begin',
+    safety:'⚠ Never do this while driving, walking, operating machinery, or in any situation requiring attention. Use only in a safe, comfortable position.',
+    end:"That's all for now.\nQuietly, you are retuned.", again:'Once more', pause:'⏸', resume:'▶', exit:'✕' }
+};
+
+var LEGAL={
+  ja:`<h3>1. 本アプリについて</h3>RETUNE は、深呼吸とイメージング（視座の変化）を用いて、心身を落ち着け、意識状態を切り替えるためのセルフケア／リラクゼーション体験です。
+<h3>2. 医療・効果に関する免責</h3>本アプリは医療行為・診断・治療ではありません。病気の治療や予防を目的とするものではなく、医師その他の専門家による助言の代替にはなりません。心身に不調・疾患のある方、通院中・服薬中の方、妊娠中の方は、ご利用前に専門家にご相談ください。
+<h3>3. <span class="warn">安全に関する重要な注意</span></h3><span class="warn">運転中・自転車や乗り物の操作中・歩行中・機械や火気の取り扱い中・その他注意を要するいかなる状況でも、絶対に本アプリを使用しないでください。</span>本アプリは意識を内側に向け、視覚イメージに集中するため、周囲への注意が著しく低下します。必ず安全で、座るか横になれる落ち着いた場所で行ってください。気分が悪くなった場合は、すぐに中止してください。
+<h3>4. 光・音について</h3>画面には光の演出が、音声にはナレーションや鐘の音が含まれます。光や音に過敏な方、てんかんの既往がある方はご注意ください。音量は事前に適切な大きさに調整してください。
+<h3>5. プライバシー</h3>本アプリは、体験のための個人情報を収集・送信しません。設定はお使いの端末内にのみ保存されます。
+<h3>6. 自己責任</h3>本アプリのご利用は、利用者ご自身の判断と責任において行うものとします。提供者は、利用に起因して生じたいかなる損害についても責任を負いません。
+<div class="end">— 以上 —</div>`,
+  en:`<h3>1. About this app</h3>RETUNE is a self-care / relaxation experience that uses deep breathing and imagery (a shift of perspective) to calm the mind and body and change your state of awareness.
+<h3>2. Medical disclaimer</h3>This app is not medical care, diagnosis, or treatment. It is not intended to treat or prevent any condition and is not a substitute for professional advice. If you have any physical or mental health condition, are under medical care or medication, or are pregnant, consult a professional before use.
+<h3>3. <span class="warn">Important safety notice</span></h3><span class="warn">Never use this app while driving, operating any vehicle or machinery, walking, handling fire, or in any situation that requires your attention.</span> The experience turns your awareness inward and reduces attention to your surroundings. Use only in a safe, calm place where you can sit or lie down. Stop immediately if you feel unwell.
+<h3>4. Light & sound</h3>The screen contains light effects; the audio contains narration and bell sounds. Take care if you are sensitive to light or sound, or have a history of epilepsy. Set the volume to a comfortable level beforehand.
+<h3>5. Privacy</h3>This app does not collect or transmit personal data. Settings are stored only on your device.
+<h3>6. Your responsibility</h3>Use of this app is at your own discretion and risk. The provider is not liable for any damages arising from its use.
+<div class="end">— end —</div>`
+};
+
+// ── scenes & narration (id = future audio file name) ──
+var SCENES=[
+ {s:0,e:30,label:{ja:'Scene 01 — 深呼吸',en:'Scene 01 — Breathe'},lines:[
+   {at:1,id:'s01a',ja:'楽な姿勢で大丈夫です。座っていても、横になっていても構いません。',en:'Settle into a comfortable position. Sitting or lying down — either is fine.'},
+   {at:9,id:'s01b',ja:'それでは、ゆっくりと深呼吸をしていきましょう。',en:'Now, let’s take a few slow, deep breaths together.'},
+   {at:14,id:'s01c',ja:'鼻から、大きく息を吸って……',en:'Breathe in deeply through your nose…'},
+   {at:20,id:'s01d',ja:'口から、ゆっくりと吐き出します。',en:'…and slowly out through your mouth.'},
+   {at:25,id:'s01e',ja:'もう一度。吸って……、はい、吐いて。',en:'Once more. Breathe in… and let it go.'}
+ ]},
+ {s:30,e:45,label:{ja:'Scene 02 — 抜け出る',en:'Scene 02 — Out'},lines:[
+   {at:31,id:'s02a',ja:'今、あなたの首の付け根から、もうひとりのあなたが、ぽんっと飛び出します。',en:'Now, from the base of your neck, another you pops gently free.'},
+   {at:39,id:'s02b',ja:'思考も、感情も、そのもうひとりのあなたへ移っていきます。',en:'Your thoughts and feelings move into that other you.'}
+ ]},
+ {s:45,e:65,label:{ja:'Scene 03 — 離れる',en:'Scene 03 — Drift'},lines:[
+   {at:46,id:'s03a',ja:'あなたと身体は、透明なゴムでつながっています。決して切れません。だから、安心して離れて大丈夫です。',en:'You and your body are joined by a clear, elastic cord. It never breaks. So you can drift away with ease.'},
+   {at:57,id:'s03b',ja:'重力はありません。あなたは、自分の意志で、どこへでも自由に動けます。',en:'There is no gravity. By your own will, you can move freely, anywhere.'}
+ ]},
+ {s:65,e:150,label:{ja:'Scene 04 — 俯瞰',en:'Scene 04 — Behold'},lines:[
+   {at:66,id:'s04a',ja:'好きな角度から、好きな距離で、座っているあなた自身を、眺めてみましょう。',en:'From any angle, at any distance, look upon yourself sitting there.'},
+   {at:82,id:'s04b',ja:'遠くからでも、すぐ近くからでも。上から、下から、ぐるりと。',en:'From far away, or up close. From above, from below, all the way around.'},
+   {at:98,id:'s04q1',q:true,ja:'そこに座っているあなたは——今、何を考えていますか？',en:'The you sitting there — what are you thinking, right now?'},
+   {at:116,id:'s04q2',q:true,ja:'今、どんな感情を、持っていますか？',en:'And what feeling are you holding, right now?'},
+   {at:132,id:'s04c',ja:'ただ、気づくだけで大丈夫です。変えようとしなくて、いいのです。',en:'Simply notice. There is no need to change anything.'}
+ ]},
+ {s:150,e:168,label:{ja:'Scene 05 — 戻る',en:'Scene 05 — Return'},lines:[
+   {at:151,id:'s05a',ja:'それでは、ゆっくりと、首元から自分の身体へ、戻っていきましょう。',en:'Now, slowly, return through your neck, back into your body.'},
+   {at:160,id:'s05b',ja:'離れていたあなたが、静かに、自分の身体へ帰ってきます。',en:'The you that drifted away comes quietly home.'}
+ ]},
+ {s:168,e:180,label:{ja:'Scene 06 — 着地',en:'Scene 06 — Land'},lines:[
+   {at:169,id:'s06a',ja:'ノイズが、消えていきます。静かに、整いました。',en:'The noise fades away. Quietly, you are retuned.'},
+   {at:176,id:'s06b',ja:'あなたのペースで、目を開けてください。',en:'In your own time, gently open your eyes.'}
+ ]}
+];
+function lineText(l){return l[LANG]||l.ja;}
+
+// ═══ AUDIO: bell (WebAudio singing bowl) + unlock ═══
+var actx=null;
+function unlockAudio(){ try{ if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended') actx.resume(); }catch(e){} }
+function ringBell(){
+  try{
+    if(AUDIO_BASE){ var b=new Audio(AUDIO_BASE+'/bell.mp3'); b.play().catch(function(){synthBell();}); return; }
+    synthBell();
+  }catch(e){ try{synthBell();}catch(_){} }
+}
+function synthBell(){
+  if(!actx) return;
+  var now=actx.currentTime;
+  // inharmonic partials for a bowl-like timbre
+  var parts=[{f:220,g:0.5},{f:330,g:0.32},{f:543,g:0.2},{f:880,g:0.12},{f:1210,g:0.06}];
+  var master=actx.createGain(); master.gain.value=0.9; master.connect(actx.destination);
+  parts.forEach(function(p,i){
+    var o=actx.createOscillator(); o.type='sine'; o.frequency.value=p.f*(1+(i?0.002*i:0));
+    var g=actx.createGain(); g.gain.setValueAtTime(0,now);
+    g.gain.linearRampToValueAtTime(p.g,now+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,now+4.5+i*0.4);
+    o.connect(g); g.connect(master); o.start(now); o.stop(now+5.2+i*0.4);
+  });
+}
+
+// ═══ BGM: ambient drone pad (WebAudio synth — no asset needed) ═══
+// A soft sustained chord (open fifths) under a lowpass filter, with a slow LFO for gentle
+// movement. Plays quietly beneath the narration. (Drop AUDIO_BASE+'/bgm.mp3' to replace later.)
+var bgmNodes=null, bgmGain=null;
+function startBGM(){
+  if(!actx || bgmNodes) return;
+  try{
+    bgmGain=actx.createGain(); bgmGain.gain.value=0; bgmGain.connect(actx.destination);
+    var filt=actx.createBiquadFilter(); filt.type='lowpass'; filt.frequency.value=520; filt.Q.value=0.6; filt.connect(bgmGain);
+    var freqs=[110.0, 164.81, 220.0, 329.63]; // A2 / E3 / A3 / E4 — calming open fifths
+    var oscs=[];
+    freqs.forEach(function(f,i){
+      var o=actx.createOscillator(); o.type=(i<2?'sine':'triangle'); o.frequency.value=f;
+      try{ o.detune.value=(i-1.5)*5; }catch(e){}                 // slight spread for warmth
+      var g=actx.createGain(); g.gain.value=(i<2?0.5:0.22)/freqs.length;
+      o.connect(g); g.connect(filt); o.start(); oscs.push(o);
+    });
+    var lfo=actx.createOscillator(); lfo.frequency.value=0.06;   // very slow filter sweep
+    var lfoGain=actx.createGain(); lfoGain.gain.value=170;
+    lfo.connect(lfoGain); lfoGain.connect(filt.frequency); lfo.start();
+    var now=actx.currentTime;                                    // fade in over 6s
+    bgmGain.gain.setValueAtTime(0, now);
+    bgmGain.gain.linearRampToValueAtTime(0.085, now+6);
+    bgmNodes={oscs:oscs, lfo:lfo};
+  }catch(e){}
+}
+function stopBGM(){
+  if(!actx || !bgmNodes || !bgmGain) return;
+  try{
+    var now=actx.currentTime;
+    bgmGain.gain.cancelScheduledValues(now);
+    bgmGain.gain.setValueAtTime(bgmGain.gain.value, now);
+    bgmGain.gain.linearRampToValueAtTime(0, now+4);             // fade out over 4s
+    var n=bgmNodes; bgmNodes=null;
+    setTimeout(function(){ try{ n.oscs.forEach(function(o){o.stop();}); n.lfo.stop(); }catch(e){} }, 4500);
+  }catch(e){}
+}
+
+// ═══ NARRATION (audio file first, Web Speech fallback) ═══
+var curAudio=null;
+function stopNarration(){ try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(e){} try{ if(curAudio){curAudio.pause();curAudio=null;} }catch(e){} }
+function playLine(l){
+  stopNarration();
+  var txt=lineText(l);
+  if(AUDIO_BASE && l.id){
+    try{
+      var a=new Audio(AUDIO_BASE+'/'+LANG+'/'+l.id+'.mp3'); curAudio=a;
+      a.addEventListener('error',function(){ speak(txt); });
+      a.play().catch(function(){ speak(txt); });
+      return;
+    }catch(e){}
+  }
+  speak(txt);
+}
+function pickVoice(){
+  if(!window.speechSynthesis) return null;
+  var v=speechSynthesis.getVoices(),pref=LANG==='ja'
+    ? ['Kyoko','O-ren','Google 日本語','Microsoft Nanami','Microsoft Ayumi']
+    : ['Samantha','Google US English','Microsoft Aria','Microsoft Jenny','Daniel'];
+  for(var i=0;i<pref.length;i++) for(var j=0;j<v.length;j++) if(v[j].name.indexOf(pref[i])!==-1) return v[j];
+  var code=LANG==='ja'?'ja':'en';
+  for(var k=0;k<v.length;k++) if((v[k].lang||'').toLowerCase().indexOf(code)===0) return v[k];
+  return null;
+}
+function speak(t){
+  if(!window.speechSynthesis) return;
+  try{ speechSynthesis.cancel(); }catch(e){}
+  var u=new SpeechSynthesisUtterance(t.replace(/\n/g,' ').replace(/——/g,'、'));
+  u.lang=LANG==='ja'?'ja-JP':'en-US';
+  u.rate=0.9; u.pitch=1.0; u.volume=1.0;        // neutral, calm; not high-pitched
+  var v=pickVoice(); if(v) u.voice=v;
+  try{ speechSynthesis.speak(u); }catch(e){}
+}
+if(window.speechSynthesis){ try{ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=function(){speechSynthesis.getVoices();}; }catch(e){} }
+
+// ── 2D BREATH CANVAS ────────────────────────────
+var c2d=document.getElementById('c2d'),ctx=c2d.getContext('2d');
+var breathImg=new Image(); breathImg.src='breathing_bg.png';
+var bParts=[],bTime=0,bRunning=false,bLast=null;
+function initC2D(){ var w=document.getElementById('wrap'); c2d.width=w.clientWidth; c2d.height=w.clientHeight; }
+// Breathing guide — translucent rings + phase text pulsing AROUND the seated character.
+// Cycle: inhale 4s → hold 1s → exhale 4s. (Adapted, not a copy, of the reference video.)
+function bEase(x){ return x<0.5?2*x*x:-1+(4-2*x)*x; }
+function drawBreath(dt){
+  bTime+=dt;
+  var W=c2d.width,H=c2d.height;
+  ctx.clearRect(0,0,W,H);                 // transparent — the 3D character shows through
+  var cx=W/2, cy=H*0.45;
+  var IN=4,HOLD=1,OUT=4,CYC=IN+HOLD+OUT;
+  var t=bTime%CYC, prog, label, sub='', key;
+  if(t<IN){ key='in'; prog=bEase(t/IN); label=LANG==='ja'?'すって':'breathe in'; }
+  else if(t<IN+HOLD){ key='hold'; prog=1; label=LANG==='ja'?'とめて':'hold'; sub=LANG==='ja'?'1秒':'1 sec'; }
+  else { key='out'; prog=1-bEase((t-IN-HOLD)/OUT); label=LANG==='ja'?'はいて':'breathe out'; }
+  var cols={in:[150,190,255], hold:[193,172,255], out:[255,178,206]};
+  var c=cols[key], rgb=c[0]+','+c[1]+','+c[2];
+  var baseR=Math.min(W,H)*0.30, R=baseR*(0.5+0.55*prog);
+  // soft inner glow
+  var grad=ctx.createRadialGradient(cx,cy,R*0.1,cx,cy,R);
+  grad.addColorStop(0,'rgba('+rgb+',0.10)'); grad.addColorStop(1,'rgba('+rgb+',0)');
+  ctx.fillStyle=grad; ctx.beginPath(); ctx.arc(cx,cy,R,0,7); ctx.fill();
+  // concentric rings
+  ctx.shadowColor='rgba('+rgb+',0.6)';
+  for(var r=0;r<3;r++){ var rr=R*(1-r*0.15);
+    ctx.beginPath(); ctx.arc(cx,cy,rr,0,7);
+    ctx.lineWidth=2-r*0.4; ctx.strokeStyle='rgba('+rgb+','+(0.55-r*0.14)+')';
+    ctx.shadowBlur=14; ctx.stroke(); }
+  ctx.shadowBlur=0;
+  // phase text at top
+  ctx.textAlign='center';
+  ctx.fillStyle='rgba('+rgb+',0.96)';
+  ctx.font='600 26px Hiragino Sans,-apple-system,sans-serif';
+  ctx.fillText(label, cx, H*0.15);
+  if(sub){ ctx.font='13px Hiragino Sans,sans-serif'; ctx.fillStyle='rgba(255,255,255,0.55)'; ctx.fillText(sub, cx, H*0.15+24); }
+}
+function breathLoop(now){ if(!bRunning)return; requestAnimationFrame(breathLoop);
+  var dt=bLast?Math.min((now-bLast)/1000,0.05):0; bLast=now; drawBreath(dt); }
+function showBreath(on){ if(on){ initC2D();bRunning=true;bLast=null;bTime=0;bParts=[];c2d.style.opacity='1';requestAnimationFrame(breathLoop); }
+  else { bRunning=false; c2d.style.opacity='0'; } }
+
+// ── 3D SCENE ────────────────────────────────────
+var wrapEl=document.getElementById('wrap');
+var W3=wrapEl.clientWidth||440,H3=wrapEl.clientHeight||800;
+var renderer=new THREE.WebGLRenderer({canvas:document.getElementById('c3d'),antialias:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.setSize(W3,H3);
+renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.2;
+renderer.outputEncoding=THREE.sRGBEncoding;
+var scene3=new THREE.Scene();
+
+var bgMat=new THREE.ShaderMaterial({side:THREE.BackSide,
+  uniforms:{c1:{value:new THREE.Color(0x0a0a1a)},c2:{value:new THREE.Color(0x151534)}},
+  vertexShader:'varying vec3 vP;void main(){vP=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+  fragmentShader:'uniform vec3 c1,c2;varying vec3 vP;void main(){float t=(normalize(vP).y+1.0)*0.5;gl_FragColor=vec4(mix(c1,c2,t),1.0);}'});
+scene3.add(new THREE.Mesh(new THREE.SphereGeometry(60,16,16),bgMat));
+
+var cam=new THREE.PerspectiveCamera(48,W3/H3,0.05,400);
+scene3.add(new THREE.AmbientLight(0x9090bb,2.5));
+var kl=new THREE.DirectionalLight(0xe0e4ff,1.8); kl.position.set(3,8,5); scene3.add(kl);
+var rl=new THREE.DirectionalLight(0x9999cc,0.8); rl.position.set(-4,3,-5); scene3.add(rl);
+var ul=new THREE.DirectionalLight(0x7777aa,0.7); ul.position.set(0,-6,2); scene3.add(ul);
+var fl=new THREE.PointLight(0xaaaadd,0.9,30); fl.position.set(1,4,6); scene3.add(fl);
+
+var neckMat=new THREE.MeshStandardMaterial({color:0xb0b0e8,emissive:0x6060d0,emissiveIntensity:1.0});
+var glowMat=new THREE.MeshBasicMaterial({color:0x7070b0,transparent:true,opacity:0.12,depthWrite:false});
+var bGlowMat=new THREE.MeshBasicMaterial({color:0x8888cc,transparent:true,opacity:0.0,depthWrite:false,side:THREE.BackSide});
+var rubMat=new THREE.LineBasicMaterial({color:0xcfd6f5,transparent:true,opacity:0.0});
+
+var ndot=new THREE.Mesh(new THREE.SphereGeometry(0.06,12,12),neckMat); scene3.add(ndot);
+var nglow=new THREE.Mesh(new THREE.SphereGeometry(0.20,12,12),glowMat); scene3.add(nglow);
+var bglow=new THREE.Mesh(new THREE.SphereGeometry(1.5,14,14),bGlowMat); scene3.add(bglow);
+
+var rubPts=new Float32Array(30*3); var rubGeo=new THREE.BufferGeometry();
+rubGeo.setAttribute('position',new THREE.BufferAttribute(rubPts,3));
+var rubLine=new THREE.Line(rubGeo,rubMat); scene3.add(rubLine);
+
+var PC=200,pA=new Float32Array(PC*3),pV=new Float32Array(PC);
+for(var i=0;i<PC;i++){ var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=3+Math.random()*8;
+  pA[i*3]=r*Math.sin(ph)*Math.cos(th); pA[i*3+1]=1.5+r*Math.cos(ph); pA[i*3+2]=r*Math.sin(ph)*Math.sin(th); pV[i]=0.001+Math.random()*0.003; }
+var pGeo=new THREE.BufferGeometry(); pGeo.setAttribute('position',new THREE.BufferAttribute(pA,3));
+scene3.add(new THREE.Points(pGeo,new THREE.PointsMaterial({color:0x6060a0,size:0.035,transparent:true,opacity:0.4})));
+
+// ── 3D breath particles (nose on inhale / mouth on exhale) ──
+var BPC=90, bp3A=new Float32Array(BPC*3), bp3=[];
+var bp3Geo=new THREE.BufferGeometry(); bp3Geo.setAttribute('position',new THREE.BufferAttribute(bp3A,3));
+var bp3Mat=new THREE.PointsMaterial({color:0xcfe6ff,size:0.05,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending});
+scene3.add(new THREE.Points(bp3Geo,bp3Mat));
+var noseP=new THREE.Vector3(0,1.7,0.4), mouthP=new THREE.Vector3(0,1.6,0.4);
+var FACEPT=new THREE.Vector3(0,1.7,0); // body's face/head point — the double's eyes always aim here
+function spawnBreath(inhale){
+  if(bp3.length>=BPC) return;
+  if(inhale){ // air drifts in from the front, toward the nose
+    var off=new THREE.Vector3((Math.random()-0.5)*0.55,(Math.random()-0.3)*0.4,0.5+Math.random()*0.6);
+    var pos=noseP.clone().add(off);
+    bp3.push({pos:pos,vel:new THREE.Vector3().subVectors(noseP,pos).multiplyScalar(1.3),life:1});
+  } else { // air streams out from the mouth, forward and down
+    var dir=new THREE.Vector3((Math.random()-0.5)*0.4,-0.2-Math.random()*0.3,0.7+Math.random()*0.5).normalize();
+    bp3.push({pos:mouthP.clone(),vel:dir.multiplyScalar(0.8+Math.random()*0.6),life:1});
+  }
+}
+function updateBreath3D(dt,e){
+  var t=e%8, inhale=t<4;
+  if(Math.random()<0.6) spawnBreath(inhale);
+  var n=0;
+  for(var i=bp3.length-1;i>=0;i--){ var p=bp3[i]; p.pos.addScaledVector(p.vel,dt); p.life-=dt*0.7;
+    if(p.life<=0){ bp3.splice(i,1); continue; }
+    bp3A[n*3]=p.pos.x; bp3A[n*3+1]=p.pos.y; bp3A[n*3+2]=p.pos.z; n++; }
+  bp3Geo.setDrawRange(0,n); bp3Geo.attributes.position.needsUpdate=true;
+}
+
+// ── MODEL (rigged Mixamo FBX) ────────────────────
+// body_sitting_idle.fbx = With-Skin body (mesh + 33-bone mixamorig rig + Sitting Idle, texture intact).
+// The double (trans) is a SkeletonUtils clone, made translucent. The anim_*.fbx files are
+// Without-Skin clips (same skeleton) loaded into clipLib for the double's floating motion (F25).
+var phys=null,trans=null,transMats=[];
+var bodyNeckBone=null, doubleFootBone=null;   // live bones the rubber cord pins to (no drift)
+var doubleHeadBone=null, headFaceLocal=null;  // double's head bone + its local "eyes-forward" axis (gaze lock)
+var mixerBody=null,mixerDouble=null;
+var clipLib={};                 // key -> THREE.AnimationClip
+var doubleClipStarted=false;
+var ANIM_FILES={ floating:'anim_floating.fbx', fallingIdle:'anim_falling_idle.fbx', treading:'anim_treading_water.fbx', swimming:'anim_swimming.fbx', flying:'anim_flying.fbx', falling:'anim_falling.fbx' };
+function playAction(mixer, clip){ if(!mixer||!clip)return null; try{ var a=mixer.clipAction(clip); a.reset(); a.setLoop(THREE.LoopRepeat,Infinity); a.play(); return a; }catch(e){ return null; } }
+// Double's motion variety: cross-fade between floating clips at varied speed so it looks like it
+// moves with its own will (not one looping clip).
+var doublePool=['floating','treading','fallingIdle','swimming'];
+var doubleAction=null, doubleSwitchAt=1e9, doubleFloatReroll=1e9;
+var doubleFlightWant=false, curDoubleFly=false;   // motion-driven clip state (fly while travelling)
+function switchDoubleClip(forcedKey){
+  if(!mixerDouble) return;
+  var key;
+  if(forcedKey && clipLib[forcedKey]) key=forcedKey;
+  else { var avail=doublePool.filter(function(k){return clipLib[k];}); if(!avail.length) return;
+         key=avail[(Math.random()*avail.length)|0]; }
+  try{
+    var nx=mixerDouble.clipAction(clipLib[key]); nx.reset(); nx.enabled=true; nx.setLoop(THREE.LoopRepeat,Infinity);
+    // all clips play slow & relaxed (natural human float, not busy); flying only slightly livelier
+    nx.setEffectiveTimeScale(key==='flying' ? (0.55+Math.random()*0.2) : (0.38+Math.random()*0.17));
+    nx.play();
+    var fade=(forcedKey==='flying')?1.2:2.4;    // long, soft cross-fades so motion never feels jumpy
+    if(doubleAction && doubleAction!==nx) doubleAction.crossFadeTo(nx,fade,false); else nx.fadeIn(1.4);
+    doubleAction=nx;
+  }catch(e){}
+}
+var TARGET=new THREE.Vector3(0,1.2,0);     // body center
+var neckO=new THREE.Vector3();             // body neck (back side)
+var ankleRel=new THREE.Vector3(0,-1.1,0.12); // double ankle offset from double center (set at load)
+var doubleNeckRel=new THREE.Vector3(0,1.0,0.0); // double NECK offset from its center (rubber attaches here)
+var bodyCenterY=1.25, bodyFitDist=6.0;     // seated body's vertical center + camera distance to frame it small & centered (S1)
+var modelReady=false, loadingHidden=false;
+function hideLoading(){ if(loadingHidden)return; loadingHidden=true; try{document.getElementById('loading').style.display='none';}catch(e){} }
+function makeTransMat(mat){ var nm; try{nm=mat.clone();}catch(e){nm=mat;}
+  try{nm.transparent=true;}catch(e){} try{nm.opacity=0;}catch(e){} try{nm.depthWrite=false;}catch(e){}
+  transMats.push(nm); return nm; }
+
+// fbxLoader is still used for the Without-Skin floating clips (loadAnimClips).
+var fbxLoader=new THREE.FBXLoader();
+// rigged.glb = tpose textured mesh + mixamorig skeleton + Sitting Idle (built in Blender:
+// weights transferred from the Mixamo mesh, bone names cleaned to match the FBX clips).
+(function(){ var _dl=new THREE.DRACOLoader(); _dl.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
+var _gl=new THREE.GLTFLoader(); _gl.setDRACOLoader(_dl); return _gl; })().load('rigged.glb?v=13',function(gltf){
+  try{
+    phys=gltf.scene;
+    // grab the embedded texture, then use flat (unlit) materials so the cartoon colours show
+    // true under the cool scene lighting (matches the reference: coral shirt / brown pants)
+    var bodyTex=null;
+    phys.traverse(function(n){ if(n.isMesh&&n.material&&n.material.map&&!bodyTex) bodyTex=n.material.map; });
+    if(bodyTex){ bodyTex.encoding=THREE.sRGBEncoding; bodyTex.needsUpdate=true; }
+    phys.traverse(function(n){ if(n.isMesh){ n.material=new THREE.MeshBasicMaterial({map:bodyTex, skinning:true}); n.frustumCulled=false; } });
+    scene3.add(phys);
+    if(gltf.animations&&gltf.animations[0]) clipLib.sitting=gltf.animations[0];   // body: Sitting Idle
+    // body breathes (Sitting Idle); pose it so we measure the SEATED shape
+    mixerBody=new THREE.AnimationMixer(phys);
+    playAction(mixerBody, clipLib.sitting);
+    mixerBody.update(0.4); phys.updateMatrixWorld(true);
+
+    // ── size & place from BONE world positions ─────────────────────────────────
+    // Box3.setFromObject lies for skinned meshes (bind matrices put the geometry box far from
+    // where the mesh actually renders), so we measure the skeleton's real joint positions.
+    function skelBounds(){ var mn=new THREE.Vector3(1e9,1e9,1e9),mx=new THREE.Vector3(-1e9,-1e9,-1e9),w=new THREE.Vector3();
+      phys.traverse(function(n){ if(n.isBone){ n.getWorldPosition(w); mn.min(w); mx.max(w); } }); return {mn:mn,mx:mx}; }
+    var sb=skelBounds(); var spanY=Math.max(0.01, sb.mx.y-sb.mn.y);
+    phys.scale.multiplyScalar(1.7/spanY);          // normalize: joints span ~1.7 (mesh ends ~2.2 tall)
+    phys.updateMatrixWorld(true);
+    sb=skelBounds();
+    var C=new THREE.Vector3((sb.mn.x+sb.mx.x)/2,(sb.mn.y+sb.mx.y)/2,(sb.mn.z+sb.mx.z)/2); // figure centroid (world)
+    // re-parent phys under a pivot whose ORIGIN = centroid, so pivot.position directly = centre
+    scene3.remove(phys); phys.position.sub(C);
+    var bodyPivot=new THREE.Group(); bodyPivot.add(phys); bodyPivot.position.set(0,1.25,0.1); scene3.add(bodyPivot);
+    bodyPivot.updateMatrixWorld(true);
+
+    // read final anchor bones (now correctly placed)
+    var bn={}, wp=new THREE.Vector3();
+    phys.traverse(function(n){ if(n.isBone){ n.getWorldPosition(wp); bn[n.name]=wp.clone();
+      if(n.name==='mixamorigNeck') bodyNeckBone=n; } });   // live body-neck (cord's near end)
+    var headB=bn.mixamorigHead||new THREE.Vector3(0,2.0,0.1);
+    var neckB=bn.mixamorigNeck||new THREE.Vector3(0,1.8,0.1);
+    var footB=bn.mixamorigLeftFoot||new THREE.Vector3(0,0.5,0.5);
+    var hipB=bn.mixamorigHips||new THREE.Vector3(0,1.0,0);
+    TARGET.set(0,1.25,0.1); bglow.position.copy(TARGET);
+    neckO.set(0, neckB.y, neckB.z-0.10);           // body neck — slightly back (spine↔brain)
+    FACEPT.copy(headB);                             // double's gaze target = head
+    ankleRel.set(0, footB.y-TARGET.y, footB.z);
+    doubleNeckRel.set(0, neckB.y-TARGET.y, neckB.z-TARGET.z); // double's NECK offset (rubber's far end)
+    noseP.set(0, headB.y-0.02, headB.z+0.25); mouthP.set(0, headB.y-0.10, headB.z+0.23);
+    ndot.position.copy(neckO); nglow.position.copy(neckO);
+    // S1 framing — small & centred (figure ~50% of frame height)
+    var topY=sb.mx.y+0.20+(1.25-C.y), botY=sb.mn.y-0.12+(1.25-C.y);
+    bodyCenterY=(topY+botY)/2;
+    bodyFitDist=((topY-botY)/(2*0.50))/Math.tan(48*Math.PI/360) + 0.7;
+
+    // ── double = skeleton-aware clone of the FINAL phys, wrapped in its own pivot ──
+    var dclone=THREE.SkeletonUtils.clone(phys);
+    transMats.length=0;
+    dclone.traverse(function(n){ if(n.isMesh){
+      var dm=new THREE.MeshBasicMaterial({map:bodyTex, skinning:true, transparent:true, opacity:0, depthWrite:false});
+      n.material=dm; n.frustumCulled=false; transMats.push(dm);
+    } if(n.isBone){ if(n.name==='mixamorigLeftFoot') doubleFootBone=n;   // ankle joint (足首) = cord's far end
+                     if(n.name==='mixamorigHead') doubleHeadBone=n; } });
+    trans=new THREE.Group(); trans.add(dclone); scene3.add(trans);  // trans.position/rotation place the double
+    mixerDouble=new THREE.AnimationMixer(dclone);
+    // record the head's local "eyes-forward" axis: in this neutral pose the face looks world +Z
+    if(doubleHeadBone){ trans.updateMatrixWorld(true);
+      var qh=doubleHeadBone.getWorldQuaternion(new THREE.Quaternion());
+      headFaceLocal=new THREE.Vector3(0,0,1).applyQuaternion(qh.invert()).normalize(); }
+    modelReady=true;
+    loadAnimClips();
+  }catch(e){ modelReady=false; }
+  finally{ hideLoading(); }
+},
+function(xhr){ try{ if(xhr.total>0) document.getElementById('lf').style.width=Math.round(xhr.loaded/xhr.total*100)+'%'; }catch(e){} },
+function(e){ try{document.getElementById('lt').textContent=LANG==='ja'?'モデル読み込みエラー':'model load error';}catch(_){} modelReady=false; hideLoading(); });
+
+// Load the Without-Skin floating clips and store them; start the double on the first that arrives.
+function loadAnimClips(){
+  Object.keys(ANIM_FILES).forEach(function(key){
+    try{ fbxLoader.load(ANIM_FILES[key], function(o){ try{ if(o.animations&&o.animations[0]){
+      var clip=o.animations[0];
+      // Keep only bone ROTATIONS. The Mixamo clips carry a root (Hips) translation in
+      // centimetre scale; applied to this metre-scale skeleton it flings/explodes the double
+      // off screen (= "invisible"). Dropping position/scale tracks keeps the figure intact and
+      // in place (we place it via trans.position); the limbs/spine still animate = floating.
+      clip.tracks=clip.tracks.filter(function(tr){ return /\.quaternion$/.test(tr.name); });
+      clipLib[key]=clip;
+    } }catch(e){} }, undefined, function(){}); }catch(e){}
+  });
+}
+setTimeout(hideLoading,15000);
+window.addEventListener('error',function(){ hideLoading(); });
+
+function setTransOp(v){ transMats.forEach(function(m){ try{m.opacity=v;}catch(e){} }); }
+
+// The Mixamo FBX's embedded texture image fails to decode (renders gray). Borrow the working
+// 4096 texture from the source GLB (same UVs) and apply it to the body + double materials.
+function applyBodyTexture(){
+  try{ new THREE.GLTFLoader().load('tpose.glb', function(gltf){ try{
+    var tex=null; gltf.scene.traverse(function(n){ if(n.isMesh&&!tex){ var m=Array.isArray(n.material)?n.material[0]:n.material; if(m&&m.map)tex=m.map; } });
+    if(!tex) return;
+    tex.flipY=false; tex.encoding=THREE.sRGBEncoding; tex.needsUpdate=true;
+    // Flat (unlit) material → shows the texture's true cartoon colours, unaffected by the cool scene
+    // lighting. Matches the reference art (coral shirt / brown pants / cream shoes).
+    if(phys) phys.traverse(function(n){ if(n.isMesh){ n.material=new THREE.MeshBasicMaterial({map:tex, skinning:true}); } });
+    transMats.length=0;
+    if(trans) trans.traverse(function(n){ if(n.isMesh){
+      var dm=new THREE.MeshBasicMaterial({map:tex, skinning:true, transparent:true, opacity:0, depthWrite:false});
+      n.material=dm; transMats.push(dm);
+    } });
+  }catch(e){} }, undefined, function(){}); }catch(e){}
+}
+
+// The cord pins to the LIVE animated bones each frame (body's neck → double's ankle) so it never
+// drifts off as the double moves/breathes. Falls back to the static anchors before bones resolve.
+var _ankleW=new THREE.Vector3();
+var _rubA=new THREE.Vector3(), _rubB=new THREE.Vector3();
+function ankleWorld(){
+  if(doubleFootBone) return _ankleW.copy(doubleFootBone.getWorldPosition(_rubB));
+  if(!trans) return _ankleW.copy(neckO);
+  return _ankleW.copy(ankleRel).applyEuler(trans.rotation).add(trans.position); }
+function updateRubber(){
+  if(bodyNeckBone) bodyNeckBone.getWorldPosition(_rubA); else _rubA.copy(neckO);
+  var aw=ankleWorld();                          // double's ankle (live)
+  var na=_rubA;                                 // body's neck (live)
+  var mid=new THREE.Vector3().addVectors(na,aw).multiplyScalar(0.5); mid.y-=0.35;
+  for(var i=0;i<30;i++){ var t=i/29,it=1-t;
+    rubPts[i*3]  =it*it*na.x+2*it*t*mid.x+t*t*aw.x;
+    rubPts[i*3+1]=it*it*na.y+2*it*t*mid.y+t*t*aw.y;
+    rubPts[i*3+2]=it*it*na.z+2*it*t*mid.z+t*t*aw.z; }
+  rubGeo.attributes.position.needsUpdate=true;
+}
+
+// sphere point relative to body
+function sph(az,el,r){ return new THREE.Vector3(r*Math.cos(el)*Math.sin(az),TARGET.y+r*Math.sin(el),r*Math.cos(el)*Math.cos(az)); }
+
+// camera looks at body from a position; up flips when overhead
+function lookFrom(pos){ try{cam.position.copy(pos);}catch(e){}
+  var over=(pos.y-TARGET.y); cam.up.set(0, Math.abs(over)>0 ? (pos.y>=TARGET.y-0.001?1:1):1, 0);
+  cam.up.set(0,1,0); cam.lookAt(TARGET); }
+
+// double purposeful motion: eased waypoints in the sphere
+// alternating NEAR (~2) and FAR (~6-7) waypoints → every leg is a deliberate near↔far surge,
+// so the double sometimes hangs close, sometimes shrinks far away (遠くに小さい姿), and the
+// fast legs trip the flight clip. el varied so it also orbits up/down.
+var WP=[ {az:0.6,el:0.30,r:2.0},{az:2.1,el:0.80,r:6.4},{az:3.4,el:-0.20,r:2.2},
+  {az:4.6,el:0.55,r:7.0},{az:5.9,el:-0.55,r:2.3},{az:7.3,el:0.95,r:5.9},
+  {az:8.6,el:-0.35,r:2.0},{az:9.9,el:0.45,r:6.7} ];
+var wpI=0,wpHold=0,wpMoving=true,wpPos=new THREE.Vector3(),wpVel=new THREE.Vector3();
+var _mid4=new THREE.Vector3(),_off4=new THREE.Vector3();   // S4 camera: frame body + double together
+function resetDouble(){ wpI=0;wpMoving=true;wpHold=0; wpPos.copy(sph(WP[0].az,WP[0].el,WP[0].r)); wpVel.set(0,0,0); smY=null; }
+function doubleStep(dt,radScale){
+  var w=WP[wpI%WP.length];
+  var tgt=sph(w.az,w.el,w.r*(radScale||1));
+  if(wpMoving){
+    // gentle, unhurried glide toward target, then linger — calm/natural rather than busy
+    var k=Math.min(dt*1.8,0.09);
+    wpVel.lerp(new THREE.Vector3().subVectors(tgt,wpPos).multiplyScalar(1.5),k);
+    if(wpVel.length()>2.6) wpVel.setLength(2.6);   // cap speed → even far moves glide calmly, not dart
+    wpPos.addScaledVector(wpVel,dt);
+    if(wpPos.distanceTo(tgt)<0.2 && wpVel.length()<0.45){ wpMoving=false; wpHold=5.0+Math.random()*4.0; }
+  } else { wpHold-=dt; if(wpHold<=0){ wpI++; wpMoving=true; } }
+  // motion-driven flight state (hysteresis: fly when surging far↔near, drift when slow) → animate() swaps clip
+  var spd=wpVel.length();
+  if(spd>1.2) doubleFlightWant=true; else if(spd<0.5) doubleFlightWant=false;
+  return wpPos;
+}
+
+// Double's gaze/posture: its eyes (+z front) always aim at the body's face (FACEPT).
+// Pitch follows the face (so from above it tips forward, from below it reclines — a free,
+// zero-G "astronaut" feel) plus a gentle sway. Limb bending needs a rig (see F25).
+var smX=0,smZ=0,smY=null;
+function lookAtFace(obj,dt){
+  var dx=FACEPT.x-obj.position.x, dy=FACEPT.y-obj.position.y, dz=FACEPT.z-obj.position.z;
+  var dH=Math.sqrt(dx*dx+dz*dz);
+  if(dH<0.35) return;                       // right at the body — gaze undefined; keep current orientation
+  var yaw=Math.atan2(dx,dz);
+  var pitch=-Math.atan2(dy,dH);            // +z (eyes) tilts toward the face above/below
+  var roll=Math.sin(fT*0.5)*0.04;          // slow floating sway
+  if(smY===null) smY=yaw;
+  var dyaw=yaw-smY; while(dyaw>Math.PI)dyaw-=2*Math.PI; while(dyaw<-Math.PI)dyaw+=2*Math.PI; // shortest path
+  smY+=dyaw*Math.min(dt*1.8,0.05);         // ease the turn so it doesn't snap around (calmer)
+  smX+=(pitch-smX)*Math.min(dt*2.5,0.07);
+  smZ+=(roll-smZ)*Math.min(dt*2.5,0.08);
+  try{ obj.rotation.set(smX, smY, smZ); }catch(e){}
+}
+
+// Lock the double's EYES onto the body's face every frame, AFTER the float clip has posed the head.
+// The body may drift/tumble calmly, but the gaze never leaves the body (it is observing itself).
+var _g1=new THREE.Vector3(),_g2=new THREE.Vector3(),_g3=new THREE.Vector3();
+var _gq1=new THREE.Quaternion(),_gq2=new THREE.Quaternion(),_gq3=new THREE.Quaternion(),_gq4=new THREE.Quaternion();
+function applyHeadGaze(){
+  if(!doubleHeadBone||!headFaceLocal) return;
+  doubleHeadBone.updateWorldMatrix(true,false);
+  var hp=_g1.setFromMatrixPosition(doubleHeadBone.matrixWorld);
+  var dir=_g2.copy(FACEPT).sub(hp); if(dir.lengthSq()<1e-5) return; dir.normalize();
+  var qCur=doubleHeadBone.getWorldQuaternion(_gq1);
+  var curFace=_g3.copy(headFaceLocal).applyQuaternion(qCur).normalize();   // where the eyes point now
+  var qDelta=_gq2.setFromUnitVectors(curFace,dir);                          // shortest swing onto the face
+  var qWorld=_gq3.multiplyQuaternions(qDelta,qCur);
+  var qParent=doubleHeadBone.parent.getWorldQuaternion(_gq4);
+  doubleHeadBone.quaternion.copy(qParent.invert().multiply(qWorld));        // back to local space
+  doubleHeadBone.updateMatrixWorld(true);
+}
+
+// ── easing ──
+function eio(t){return t<0.5?2*t*t:-1+(4-2*t)*t;}
+function lp(a,b,t){return a+(b-a)*t;}
+function c01(v){return Math.max(0,Math.min(1,v));}
+function sp(e,s){return c01((e-s.s)/(s.e-s.s));}
+// popcorn pop: fast overshoot then settle
+function pop(p){ if(p<=0)return 0; if(p>=1)return 1; return 1-Math.pow(1-p,2.2)*Math.cos(p*Math.PI*1.1); }
+
+// ── state ──
+var elapsed=0,playing=false,paused=false,lastT=null,fT=0,started=false,ended=false;
+
+var narDiv=document.getElementById('nar'),narTxt=document.getElementById('nt');
+var lastLine=null,fadeTO=null;
+function showLine(l){
+  if(l===lastLine)return; lastLine=l;
+  if(fadeTO)clearTimeout(fadeTO);
+  if(!l){ narDiv.style.opacity='0'; return; }
+  narDiv.style.opacity='0';
+  fadeTO=setTimeout(function(){
+    var html=lineText(l).replace(/\n/g,'<br>');
+    if(l.q) html='<span class="q">'+html+'</span>';
+    narTxt.innerHTML=html; narDiv.style.opacity='1'; playLine(l);
+  },450);
+}
+function updateHUD(e){
+  document.getElementById('pf').style.width=(e/TOTAL*100)+'%';
+  var m=Math.floor(e/60),s=Math.floor(e%60).toString().padStart(2,'0');
+  document.getElementById('tl').textContent=m+':'+s;
+  var cur=null;
+  for(var i=0;i<SCENES.length;i++){ var sc=SCENES[i];
+    if(e>=sc.s&&e<sc.e){ document.getElementById('sl').textContent=sc.label[LANG]||sc.label.ja;
+      for(var j=0;j<sc.lines.length;j++) if(e>=sc.lines[j].at) cur=sc.lines[j]; break; } }
+  showLine(cur);
+}
+
+// ── MAIN LOOP ──
+function animate(now){ requestAnimationFrame(animate); try{ animateFrame(now); }catch(e){} }
+function animateFrame(now){
+  var dt=lastT?Math.min((now-lastT)/1000,0.05):0;
+  if(playing&&!paused&&lastT){ elapsed=Math.min(elapsed+dt,TOTAL); if(elapsed>=TOTAL) finishExperience(); }
+  lastT=now; var e=elapsed; fT+=dt;
+  if(mixerBody) mixerBody.update(dt);      // skeletal animation (F25)
+  if(mixerDouble) mixerDouble.update(dt);
+  if(started && mixerDouble && elapsed>=29 && elapsed<169){   // vary the double's motion while it's active
+    // flying mixes in whenever the double surges across a far↔near transition; drifting clips while it hovers
+    if((!doubleAction || doubleFlightWant!==curDoubleFly) && elapsed>=doubleSwitchAt){
+      switchDoubleClip(doubleFlightWant?'flying':null);
+      curDoubleFly=doubleFlightWant; doubleSwitchAt=elapsed+1.3+Math.random()*0.6;
+      if(!doubleFlightWant) doubleFloatReroll=elapsed+5+Math.random()*4;
+    } else if(!curDoubleFly && elapsed>=doubleFloatReroll){   // re-roll a fresh drift clip now and then
+      switchDoubleClip(null); doubleFloatReroll=elapsed+5+Math.random()*4;
+    }
+  }
+  if(started) updateHUD(e);
+
+  if(!started){ lookFrom(sph(0.4,0.28,5.4)); }
+  if(!modelReady){ renderer.render(scene3,cam); return; }
+  bp3Mat.opacity=0;
+  if(started && e>=30 && bRunning) showBreath(false); // breathing guide only in S1
+
+  if(!started){
+    setTransOp(0); rubMat.opacity=0;
+  } else if(e<30){                                   // S1 — seated full body centered + breathing-ring guide
+    setTransOp(0); rubMat.opacity=0; bGlowMat.opacity=0;
+    try{ trans.position.copy(TARGET); trans.rotation.set(0,0,0); }catch(e2){}
+    try{ cam.position.set(0,bodyCenterY,bodyFitDist); cam.up.set(0,1,0); cam.lookAt(0,bodyCenterY,0); }catch(e2){}
+    neckMat.emissiveIntensity=0.6; glowMat.opacity=0.03;
+    ndot.visible=true; nglow.visible=true;            // restore the portal mark (in case of replay)
+    if(!bRunning) showBreath(true);
+    updateRubber();
+  } else if(e<45){                                   // S2 pop out (popcorn)
+    var p=sp(e,SCENES[1]),pp=pop(p);
+    setTransOp(c01(p*4)*0.5); rubMat.opacity=c01(p*4)*0.55;
+    var tgt0=sph(WP[0].az,WP[0].el,WP[0].r);
+    var from=neckO.clone();
+    try{ trans.position.set(lp(from.x,tgt0.x,pp), lp(from.y,tgt0.y,pp), lp(from.z,tgt0.z,pp)); }catch(e2){}
+    lookAtFace(trans,dt);
+    var pulse=p<0.25?p/0.25:Math.max(0,1-(p-0.25)/0.4);
+    neckMat.emissiveIntensity=0.9+pulse*1.1; glowMat.opacity=0.1+pulse*0.2;
+    lookAtFace(trans,dt);
+    lookFrom(sph(0.55+fT*0.05,0.22,5.3));            // wider 3rd-person so the pop is readable
+    if(p<0.05) resetDouble();
+    updateRubber();
+  } else if(e<65){                                   // S3 drift — clear 3rd-person: body centered, double floats nearby
+    setTransOp(0.5); rubMat.opacity=0.5;
+    try{ trans.position.copy(doubleStep(dt,0.6)); }catch(e2){}   // stay nearer during the first drift
+    lookAtFace(trans,dt);
+    lookFrom(sph(0.4+fT*0.12, 0.18+Math.sin(fT*0.25)*0.22, 5.8));
+    neckMat.emissiveIntensity=0.7+Math.sin(fT)*0.15;
+    updateRubber();
+  } else if(e<150){                                  // S4 behold — 3rd-person orbit, varied angle & distance
+    setTransOp(0.46); rubMat.opacity=0.46;
+    var radScale=0.96+Math.sin(fT*0.22)*0.12;   // mild breathing; the near/far swing lives in the waypoints now
+    try{ trans.position.copy(doubleStep(dt,radScale)); }catch(e2){}
+    lookAtFace(trans,dt);
+    // frame BOTH the seated body and the (often far) double, pulling back as they spread apart —
+    // so the double genuinely reads as small & distant instead of drifting off-screen
+    _mid4.copy(TARGET).multiplyScalar(0.62).addScaledVector(trans.position,0.38); // bias to the body (anchor)
+    var spread4=TARGET.distanceTo(trans.position);
+    var az4=fT*0.16, el4=Math.sin(fT*0.13)*0.45+0.16;
+    var camD4=4.0+spread4*0.62;
+    _off4.set(Math.cos(el4)*Math.sin(az4),Math.sin(el4),Math.cos(el4)*Math.cos(az4)).multiplyScalar(camD4);
+    cam.position.copy(_mid4).add(_off4); cam.up.set(0,1,0); cam.lookAt(_mid4);
+    neckMat.emissiveIntensity=0.65+Math.sin(fT*0.9)*0.12;
+    updateRubber();
+  } else if(e<168){                                  // S5 return to neck — 3rd-person, settling front
+    var p5=sp(e,SCENES[4]),ep=eio(p5);
+    setTransOp(lp(0.46,0.12,ep)); rubMat.opacity=lp(0.46,0.2,ep);
+    try{ trans.position.lerp(neckO,Math.min(dt*1.6,ep*0.12+0.02)); }catch(e2){}
+    lookAtFace(trans,dt);
+    lookFrom(sph(0.4+(1-ep)*fT*0.08, lp(0.22,0.12,ep), lp(5.6,5.0,ep)));
+    neckMat.emissiveIntensity=0.7+ep*0.6;
+    updateRubber();
+  } else {                                           // S6 land — glow, settle
+    var p6=sp(e,SCENES[5]),ep6=eio(p6);
+    // the whole neck "portal" — double + cord + glowing dot + halo-glow — dissolves as it lands,
+    // leaving only the soft body halo. Fade ~2.4× faster than the scene so it's all gone by ~t173.
+    var portal=1-Math.min(1,ep6*2.4);
+    setTransOp(0.12*portal);                  // double merges back in (no lingering ghost)
+    rubMat.opacity=0.2*portal; if(rubMat.opacity<0.03) rubMat.opacity=0;
+    glowMat.opacity=0.2*portal;
+    neckMat.emissiveIntensity=0.6*portal;
+    ndot.visible=portal>0.02; nglow.visible=portal>0.02;     // hide the white mark once the portal closes
+    bGlowMat.opacity=ep6*0.22;
+    try{ trans.position.lerp(neckO,0.1); }catch(e2){}
+    lookFrom(sph(0.4+ep6*0.3,0.18,lp(4.4,5.4,ep6)));
+    if(rubMat.opacity>0) updateRubber();
+  }
+  // gaze lock runs last, after the float clip + body orientation are applied, so the eyes always win
+  if(started && e>=30 && e<168) applyHeadGaze();
+  // don't just rely on opacity:0 — some mobile GPUs still draw a transparent line as a hairline.
+  // Skip drawing the cord entirely when it's effectively invisible.
+  rubLine.visible = rubMat.opacity > 0.004;
+
+  for(var i2=0;i2<PC;i2++){ pA[i2*3+1]+=pV[i2]; if(pA[i2*3+1]>TARGET.y+9)pA[i2*3+1]=TARGET.y-7; }
+  pGeo.attributes.position.needsUpdate=true;
+  renderer.render(scene3,cam);
+}
+
+// ── FLOW ────────────────────────────────────────
+function applyLang(){
+  var u=UI[LANG];
+  document.getElementById('titleHint').textContent=u.titleHint;
+  document.getElementById('legalH').textContent=u.legalH;
+  document.getElementById('agreeLabel').textContent=u.agree;
+  document.getElementById('startBtn').textContent=u.start;
+  document.getElementById('safety').textContent=u.safety;
+  document.getElementById('ldoc').innerHTML=LEGAL[LANG];
+  document.getElementById('endMsg').textContent=u.end;
+  document.getElementById('againBtn').textContent=u.again;
+  document.getElementById('bp').textContent=u.pause;
+  document.getElementById('br').textContent=u.exit;
+  document.documentElement.lang=LANG;
+  Array.prototype.forEach.call(document.querySelectorAll('.lang-btn'),function(b){ b.classList.toggle('on',b.dataset.l===LANG); });
+  refreshScrollGate();
+}
+document.querySelectorAll('.lang-btn').forEach(function(b){ b.addEventListener('click',function(ev){ ev.stopPropagation(); LANG=b.dataset.l; applyLang(); }); });
+
+// title → legal
+document.getElementById('title').addEventListener('click',function(){
+  unlockAudio();
+  this.classList.add('fade-out');
+  var self=this; setTimeout(function(){ self.classList.add('hidden'); openLegal(); },1000);
+});
+
+var consented=false;
+try{ consented=localStorage.getItem('retune_consent')==='1'; }catch(e){}
+function openLegal(){
+  var lg=document.getElementById('legal'); lg.classList.remove('hidden');
+  if(consented){
+    // returning user: skip full doc, show only per-session safety reminder
+    document.getElementById('ldoc').classList.add('hidden');
+    document.getElementById('scrollnote').classList.add('hidden');
+    document.getElementById('consentRow').classList.add('hidden');
+    document.getElementById('startBtn').disabled=false;
+  }
+  refreshScrollGate();
+}
+var ldoc=document.getElementById('ldoc'),scrolledEnd=false;
+function refreshScrollGate(){
+  if(consented){ return; }
+  var sn=document.getElementById('scrollnote'), u=UI[LANG];
+  sn.textContent=scrolledEnd?u.scrollDone:u.scrollHint;
+  document.getElementById('consentRow').classList.toggle('disabled',!scrolledEnd);
+}
+ldoc.addEventListener('scroll',function(){
+  if(ldoc.scrollTop+ldoc.clientHeight>=ldoc.scrollHeight-8){ if(!scrolledEnd){ scrolledEnd=true; refreshScrollGate(); } }
+});
+document.getElementById('agree').addEventListener('change',function(){
+  document.getElementById('startBtn').disabled=!this.checked;
+});
+document.getElementById('startBtn').addEventListener('click',startExperience);
+
+function startExperience(){
+  unlockAudio();
+  try{ localStorage.setItem('retune_consent','1'); }catch(e){}
+  var lg=document.getElementById('legal'); lg.classList.add('fade-out');
+  setTimeout(function(){ lg.classList.add('hidden'); lg.classList.remove('fade-out'); },1000);
+  if(!modelReady){ document.getElementById('loading').style.display='flex'; }
+  ringBell();
+  // small delay so the bell breathes before narration
+  setTimeout(beginPlay,1400);
+}
+function beginPlay(){
+  started=true; ended=false; elapsed=0; playing=true; paused=false; lastT=null; lastLine=null;
+  resetDouble();
+  if(mixerDouble){ try{ mixerDouble.stopAllAction(); }catch(e){} }
+  doubleAction=null; doubleSwitchAt=0; doubleFloatReroll=1e9; doubleFlightWant=false; curDoubleFly=false;
+  startBGM();
+  document.getElementById('hud').style.opacity='1';
+  document.getElementById('ctrl').style.display='flex';
+  document.getElementById('bp').textContent=UI[LANG].pause;
+}
+function finishExperience(){
+  playing=false; ended=true; stopNarration(); stopBGM();
+  showLine(null); showBreath(false);
+  document.getElementById('hud').style.opacity='0';
+  document.getElementById('ctrl').style.display='none';
+  ringBell();
+  setTimeout(function(){ document.getElementById('end').classList.remove('hidden'); },1600);
+}
+
+// controls
+document.getElementById('bp').addEventListener('click',function(){
+  if(!started)return; paused=!paused; this.textContent=paused?UI[LANG].resume:UI[LANG].pause;
+  if(paused) stopNarration(); else { lastLine=null; }
+});
+document.getElementById('br').addEventListener('click',function(){ location.reload(); });
+document.getElementById('againBtn').addEventListener('click',function(){
+  document.getElementById('end').classList.add('hidden'); beginPlay();
+});
+
+window.addEventListener('resize',function(){ var w=document.getElementById('wrap');
+  W3=w.clientWidth;H3=w.clientHeight; renderer.setSize(W3,H3); cam.aspect=W3/H3; cam.updateProjectionMatrix(); });
+
+applyLang();
+lookFrom(sph(0.4,0.3,5.5));
+requestAnimationFrame(animate);
+</script>
+</body>
+</html>
