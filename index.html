@@ -772,14 +772,16 @@ function applyViewpointFrame(e,dt){
   setTransOp(0);                                            // keep the (unused) human double hidden
   ndot.visible=false; nglow.visible=false; bGlowMat.opacity=0; glowMat.opacity=0; neckMat.emissiveIntensity=0;
   if(e>=4&&e<55){ if(!bRunning) showBreath(true); }         // ring starts after the settle-in line; 3×17s breaths (4–55s)
-  // Zero-g tumble (user 2026-07-04): through S4 the seated body slowly leans back and twists,
-  // bringing its SOLES into view — gravity has clearly let go. It settles upright again in S5.
+  // Zero-g tumble (user 2026-07-04): across S4 the seated body makes ONE full head-over-heels
+  // revolution (360° backward around X) — soles sweep into view mid-turn, and the body arrives
+  // upright again exactly as S4 ends. The small twist/roll fade to zero at both ends, so the
+  // motion begins from stillness and returns to stillness with nothing left to "undo" in S5.
   if(bodyPivotG){
-    var tu=eio(c01((e-88)/42));                        // the lean develops gently over ~42s
-    var back=-1.15*tu;                                 // ~-66° backward pitch → soles face upward
-    var yaw=(0.3+0.5*Math.sin(e*0.045))*tu;            // slow drifting twist
-    var ret=1-eio(c01((e-150)/14));                    // settle home by 2:44 (S5)
-    try{ bodyPivotG.rotation.set(back*ret, yaw*ret, 0.10*tu*ret); }catch(e2){}
+    var tu=eio(c01((e-88)/62));                        // eased full revolution across S4 (88–150s)
+    var spin=-Math.PI*2*tu;                            // 0 → -360°: backward, soles-first
+    var organ=Math.sin(Math.PI*tu);                    // 0 at both ends — organic drift envelope
+    var yaw=0.35*Math.sin(e*0.045)*organ;              // slow drifting twist
+    try{ bodyPivotG.rotation.set(spin, yaw, 0.08*organ); }catch(e2){}
   }
   applyViewpointCamera(e);
   // thread appears as the viewpoint lifts off (~0:55) and fades as it returns into the body (~2:54)
