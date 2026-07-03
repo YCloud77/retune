@@ -167,13 +167,13 @@ var SCENES=[
    {at:1,id:'s01a',ja:'楽な姿勢で大丈夫です。座っていても、横になっていても構いません。',en:'Settle into a comfortable position. Sitting or lying down — either is fine.'},
    {at:4.5,id:'s01b',ja:'それでは、ゆっくりと、深呼吸。鼻から、すって……',en:'Now, a slow, deep breath. In through your nose…'},
    {at:10,id:'s01c',ja:'とめて……',en:'Hold…'},
-   {at:13,id:'s01d',ja:'口から、ゆっくり、はいて。',en:'And slowly out through your mouth.'},
+   {at:12,id:'s01d',ja:'口から、ゆっくり、はいて。',en:'And slowly out through your mouth.'},
    {at:21.5,id:'s01e',ja:'もう一度。すって……',en:'Once more. Breathe in…'},
    {at:27,id:'s01f',ja:'とめて……',en:'Hold…'},
-   {at:30,id:'s01g',ja:'はいて……ゆっくり。',en:'And out… slowly.'},
+   {at:29,id:'s01g',ja:'はいて……ゆっくり。',en:'And out… slowly.'},
    {at:38.5,id:'s01h',ja:'最後に、もう一度。すって……',en:'One last time. Breathe in…'},
    {at:44,id:'s01i',ja:'とめて……',en:'Hold…'},
-   {at:47,id:'s01j',ja:'はいて。そのまま、呼吸に、任せます。',en:'And out. Now let the breath carry itself.'}
+   {at:46,id:'s01j',ja:'はいて。そのまま、呼吸に、任せます。',en:'And out. Now let the breath carry itself.'}
  ]},
  {s:55,e:70,label:{ja:'Scene 02 — 移る',en:'Scene 02 — Shift'},lines:[
    {at:56,id:'s02a',ja:'いま、あなたの首元から、すこし離れたところに——半透明の、もうひとつのあなたが、静かに、あらわれます。',en:'Now, a little away from the base of your neck — a translucent other you quietly appears.'},
@@ -214,15 +214,19 @@ function ringBell(){
 function synthBell(){
   if(!actx) return;
   var now=actx.currentTime;
-  // inharmonic partials for a bowl-like timbre
-  var parts=[{f:220,g:0.5},{f:330,g:0.32},{f:543,g:0.2},{f:880,g:0.12},{f:1210,g:0.06}];
-  var master=actx.createGain(); master.gain.value=0.9; master.connect(actx.destination);
+  // More natural singing bowl (2026-07-04): soft strike (no click), warm low fundamental,
+  // and TWIN slightly-detuned voices per partial — their interference makes the slow
+  // "wah-wah" beating that a real bowl has. Longer, quieter tail.
+  var parts=[{f:196,g:0.42,d:8.0},{f:372,g:0.22,d:6.5},{f:667,g:0.10,d:5.0},{f:1053,g:0.05,d:3.6}];
+  var master=actx.createGain(); master.gain.value=0.62; master.connect(actx.destination);
   parts.forEach(function(p,i){
-    var o=actx.createOscillator(); o.type='sine'; o.frequency.value=p.f*(1+(i?0.002*i:0));
-    var g=actx.createGain(); g.gain.setValueAtTime(0,now);
-    g.gain.linearRampToValueAtTime(p.g,now+0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001,now+4.5+i*0.4);
-    o.connect(g); g.connect(master); o.start(now); o.stop(now+5.2+i*0.4);
+    [0,0.9].forEach(function(det){
+      var o=actx.createOscillator(); o.type='sine'; o.frequency.value=p.f+det;
+      var g=actx.createGain(); g.gain.setValueAtTime(0,now);
+      g.gain.linearRampToValueAtTime(p.g*0.5,now+0.09);
+      g.gain.exponentialRampToValueAtTime(0.0001,now+p.d+i*0.3);
+      o.connect(g); g.connect(master); o.start(now); o.stop(now+p.d+i*0.3+0.1);
+    });
   });
 }
 
@@ -305,14 +309,16 @@ function drawBreath(dt){
   var W=c2d.width,H=c2d.height;
   ctx.clearRect(0,0,W,H);                 // transparent — the 3D character shows through
   var cx=W/2, cy=H*0.45;
-  var IN=6,HOLD=3,OUT=8,CYC=IN+HOLD+OUT;   // one deep breath = 17s ×3 = the whole breathing block
+  var IN=6,HOLD=2,OUT=9,CYC=IN+HOLD+OUT;   // one deep breath = 17s ×3 (吸6・止2・吐9, user 2026-07-04)
   var t=bTime%CYC, prog, label, sub='', key;
   if(t<IN){ key='in'; prog=bEase(t/IN); label=LANG==='ja'?'すって':'breathe in'; }
   else if(t<IN+HOLD){ key='hold'; prog=1; label=LANG==='ja'?'とめて':'hold'; sub=LANG==='ja'?HOLD+'秒':HOLD+' sec'; }
   else { key='out'; prog=1-bEase((t-IN-HOLD)/OUT); label=LANG==='ja'?'はいて':'breathe out'; }
   var cols={in:[150,190,255], hold:[193,172,255], out:[255,178,206]};
   var c=cols[key], rgb=c[0]+','+c[1]+','+c[2];
-  var baseR=Math.min(W,H)*0.30, R=baseR*(0.5+0.55*prog);
+  // Ring motion REVERSED (user 2026-07-04): contracts while breathing IN (air drawn inward),
+  // rests small on hold, expands while breathing OUT — the opposite of the previous mapping.
+  var baseR=Math.min(W,H)*0.30, R=baseR*(0.5+0.55*(1-prog));
   // soft inner glow
   var grad=ctx.createRadialGradient(cx,cy,R*0.1,cx,cy,R);
   grad.addColorStop(0,'rgba('+rgb+',0.10)'); grad.addColorStop(1,'rgba('+rgb+',0)');
@@ -706,10 +712,16 @@ function pop(p){ if(p<=0)return 0; if(p>=1)return 1; return 1-Math.pow(1-p,2.2)*
 // the phone IS the transparent body, so the cord leaves the neck and comes "home" to us.
 // It follows the camera with a soft lag (elastic, not rigid) plus a zero-g sway.
 var THREAD_OPACITY=0.26, THREAD_SAG=0.40;
-var _thA=new THREE.Vector3(), _thE=new THREE.Vector3(), _thET=new THREE.Vector3(), _thFwd=new THREE.Vector3(), _thDown=new THREE.Vector3(), _thInit=false;
+var _thA=new THREE.Vector3(), _thE=new THREE.Vector3(), _thET=new THREE.Vector3(), _thFwd=new THREE.Vector3(), _thDown=new THREE.Vector3(), _thOff=new THREE.Vector3(), _thInit=false;
 function updateThread(e,dt){
   var ax,ay,az;
-  if(bodyNeckBone){ bodyNeckBone.getWorldPosition(_thA); ax=_thA.x; ay=_thA.y; az=_thA.z-0.10; } // -z = behind the neck
+  if(bodyNeckBone){
+    // Anchor is ALWAYS the base of the neck (user rule). The small "behind the neck" offset
+    // is rotated along with the body, so the origin stays glued to the neck through the tumble.
+    bodyNeckBone.getWorldPosition(_thA);
+    _thOff.set(0,0,-0.10); if(bodyPivotG){ try{ _thOff.applyQuaternion(bodyPivotG.quaternion); }catch(e2){} }
+    _thA.add(_thOff); ax=_thA.x; ay=_thA.y; az=_thA.z;
+  }
   else { ax=neckO.x; ay=neckO.y; az=neckO.z; }
   // far end = viewer's ankle: below the frame's bottom edge, slightly ahead of the camera.
   // Use the camera's REAL orientation (quaternion) so "screen-down" stays the bottom of the
@@ -772,16 +784,16 @@ function applyViewpointFrame(e,dt){
   setTransOp(0);                                            // keep the (unused) human double hidden
   ndot.visible=false; nglow.visible=false; bGlowMat.opacity=0; glowMat.opacity=0; neckMat.emissiveIntensity=0;
   if(e>=4&&e<55){ if(!bRunning) showBreath(true); }         // ring starts after the settle-in line; 3×17s breaths (4–55s)
-  // Zero-g tumble (user 2026-07-04): across S4 the seated body makes ONE full head-over-heels
-  // revolution (360° backward around X) — soles sweep into view mid-turn, and the body arrives
-  // upright again exactly as S4 ends. The small twist/roll fade to zero at both ends, so the
-  // motion begins from stillness and returns to stillness with nothing left to "undo" in S5.
+  // Zero-g tumble (user 2026-07-04, order fixed): across S4 the seated body makes TWO full
+  // revolutions in sequence — first HORIZONTAL (360° around Y, 88–118s: every side sweeps past),
+  // then VERTICAL (360° head-over-heels around X, 118–150s: soles rise into view mid-turn).
+  // Each revolution eases from stillness to stillness, and 360°≡0° so the body simply IS
+  // upright again as S4 ends — nothing to "undo" in S5. A whisper of roll keeps it organic.
   if(bodyPivotG){
-    var tu=eio(c01((e-88)/62));                        // eased full revolution across S4 (88–150s)
-    var spin=-Math.PI*2*tu;                            // 0 → -360°: backward, soles-first
-    var organ=Math.sin(Math.PI*tu);                    // 0 at both ends — organic drift envelope
-    var yaw=0.35*Math.sin(e*0.045)*organ;              // slow drifting twist
-    try{ bodyPivotG.rotation.set(spin, yaw, 0.08*organ); }catch(e2){}
+    var p1=eio(c01((e-88)/30));                        // horizontal revolution (1:28–1:58)
+    var p2=eio(c01((e-118)/32));                       // then vertical revolution (1:58–2:30)
+    var organ=0.08*(Math.sin(Math.PI*p1)+Math.sin(Math.PI*p2)); // zero at every boundary
+    try{ bodyPivotG.rotation.set(-Math.PI*2*p2, -Math.PI*2*p1, organ); }catch(e2){}
   }
   applyViewpointCamera(e);
   // thread appears as the viewpoint lifts off (~0:55) and fades as it returns into the body (~2:54)
@@ -984,9 +996,10 @@ function startExperience(){
   var lg=document.getElementById('legal'); lg.classList.add('fade-out');
   setTimeout(function(){ lg.classList.add('hidden'); lg.classList.remove('fade-out'); },1000);
   if(!modelReady){ document.getElementById('loading').style.display='flex'; }
-  ringBell();
-  // small delay so the bell breathes before narration
-  setTimeout(beginPlay,1400);
+  // Bell timing (user 2026-07-04): ring a beat LATER — let the screen settle first,
+  // then the bell, then a breath of silence before the narration begins.
+  setTimeout(ringBell,900);
+  setTimeout(beginPlay,2300);
 }
 function beginPlay(){
   started=true; ended=false; elapsed=0; playing=true; paused=false; lastT=null; lastLine=null;
