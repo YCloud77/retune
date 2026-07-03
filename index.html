@@ -456,6 +456,7 @@ function switchDoubleClip(forcedKey){
 }
 var TARGET=new THREE.Vector3(0,1.2,0);     // body center
 var bodyPivotG=null;                       // body pivot (origin = centroid) — rotated for the S4 zero-g tumble
+var mistPivotG=null, mistMats=[], _mistFrom=new THREE.Vector3(), _mistArmed=false;  // S5 white-haze return body
 var neckO=new THREE.Vector3();             // body neck (back side)
 var ankleRel=new THREE.Vector3(0,-1.1,0.12); // double ankle offset from double center (set at load)
 var doubleNeckRel=new THREE.Vector3(0,1.0,0.0); // double NECK offset from its center (rubber attaches here)
@@ -503,6 +504,18 @@ var _gl=new THREE.GLTFLoader(); _gl.setDRACOLoader(_dl); return _gl; })().load('
     var bodyPivot=new THREE.Group(); bodyPivot.add(phys); bodyPivot.position.set(0,1.25,0.1); scene3.add(bodyPivot);
     bodyPivot.updateMatrixWorld(true);
     bodyPivotG=bodyPivot;   // expose for the S4 zero-g tumble (soles-visible rotation)
+
+    // Mist body (2026-07-04, user): a white-haze, half-transparent silhouette of "you" that
+    // drifts back INTO the physical body during S5. A SkeletonUtils clone frozen in the same
+    // seated pose, drawn as a soft additive white ghost. Hidden until the return begins.
+    try{
+      var mist=THREE.SkeletonUtils.clone(phys);
+      mist.traverse(function(n){ if(n.isMesh){
+        var mm=new THREE.MeshBasicMaterial({color:0xdfe8ff, transparent:true, opacity:0, depthWrite:false, blending:THREE.AdditiveBlending, skinning:true});
+        n.material=mm; mistMats.push(mm); n.frustumCulled=false; } });
+      var mp=new THREE.Group(); mp.add(mist); mp.position.copy(bodyPivot.position); mp.scale.setScalar(1.05); mp.visible=false;
+      scene3.add(mp); mistPivotG=mp;
+    }catch(e2){}
 
     // read final anchor bones (now correctly placed)
     var bn={}, wp=new THREE.Vector3();
@@ -795,9 +808,32 @@ function applyViewpointFrame(e,dt){
     var organ=0.08*(Math.sin(Math.PI*p1)+Math.sin(Math.PI*p2)); // zero at every boundary
     try{ bodyPivotG.rotation.set(-Math.PI*2*p2, -Math.PI*2*p1, organ); }catch(e2){}
   }
+  // Mist return (user 2026-07-04): from S5 a white, half-transparent haze-you drifts slowly
+  // back and settles INTO the seated body, dissolving as it merges — and the body answers
+  // with a soft glow. The thread has already faded (its journey is over); the mist IS the return.
+  if(mistPivotG){
+    if(e>=150&&e<170){
+      if(!_mistArmed){ _mistArmed=true;
+        _mistFrom.copy(cam.position).lerp(TARGET,0.42);
+        _mistFrom.y=Math.max(TARGET.y-0.2,Math.min(TARGET.y+1.2,_mistFrom.y)); }
+      var mp5=eio(c01((e-150)/14));                     // drift home over ~14s
+      mistPivotG.visible=true;
+      try{ mistPivotG.position.lerpVectors(_mistFrom,bodyPivotG?bodyPivotG.position:TARGET,mp5); }catch(e2){}
+      try{ mistPivotG.scale.setScalar(1.05-0.05*mp5); }catch(e2){}
+      var mo=0.22*c01((e-150)/3)*(1-eio(c01((e-164)/5))); // breathe in → dissolve as it merges
+      for(var mi=0;mi<mistMats.length;mi++) mistMats[mi].opacity=mo;
+      bGlowMat.opacity=0.16*eio(c01((e-160)/8));        // the body softly glows as it absorbs
+    } else {
+      mistPivotG.visible=false;
+      if(e>=170) bGlowMat.opacity=Math.max(0,0.16*(1-(e-170)/8));  // afterglow settles away
+      if(e<150) _mistArmed=false;                       // re-arm for replay
+    }
+  }
   applyViewpointCamera(e);
-  // thread appears as the viewpoint lifts off (~0:55) and fades as it returns into the body (~2:54)
-  rubMat.opacity = THREAD_OPACITY * c01((e-55)/4) * c01((180-e)/6);
+  // thread appears as the viewpoint lifts off (~0:55) and stays through the RETURN — in the
+  // user's concept sketch the thread and the mist-you coexist while it comes home. It dissolves
+  // together with the merge (~2:46–2:52), just before the landing glow.
+  rubMat.opacity = THREAD_OPACITY * c01((e-55)/4) * c01((172-e)/6);
   if(rubMat.opacity>0.004) updateThread(e,dt);
 }
 
