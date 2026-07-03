@@ -463,15 +463,12 @@ var fbxLoader=new THREE.FBXLoader();
 var _gl=new THREE.GLTFLoader(); _gl.setDRACOLoader(_dl); return _gl; })().load('rigged.glb?v=13',function(gltf){
   try{
     phys=gltf.scene;
-    // Premium material pass (2026-07-03): lit MeshStandardMaterial instead of flat unlit —
-    // the figure now receives key/rim lighting and reads dimensional (less cartoon-flat),
-    // keeping the original texture colours. Falls back to unlit if Standard fails.
-    var bodyTex=null;
-    phys.traverse(function(n){ if(n.isMesh&&n.material&&n.material.map&&!bodyTex) bodyTex=n.material.map; });
-    if(bodyTex){ bodyTex.encoding=THREE.sRGBEncoding; bodyTex.needsUpdate=true; }
+    // Silhouette pass (2026-07-03, user direction): no face detail, no colours —
+    // one quiet dark form. The rim light draws a faint edge so the figure reads
+    // against the space background: anonymous, universal, premium.
     phys.traverse(function(n){ if(n.isMesh){
-      try{ n.material=new THREE.MeshStandardMaterial({map:bodyTex, skinning:true, roughness:0.82, metalness:0.0}); }
-      catch(e2){ n.material=new THREE.MeshBasicMaterial({map:bodyTex, skinning:true}); }
+      try{ n.material=new THREE.MeshStandardMaterial({color:0x000000, emissive:0x000000, skinning:true, roughness:1.0, metalness:0.0}); }
+      catch(e2){ n.material=new THREE.MeshBasicMaterial({color:0x14172e, skinning:true}); }
       n.frustumCulled=false; } });
     scene3.add(phys);
     if(gltf.animations&&gltf.animations[0]) clipLib.sitting=gltf.animations[0];   // body: Sitting Idle
