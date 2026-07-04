@@ -177,14 +177,16 @@ canvas{display:block;width:100%!important;height:100%!important;position:absolut
 //   defensive: every Three.js write in try-catch, .set() for vec3
 // ═══════════════════════════════════════════════
 
-var TOTAL=180;
+// 188s: the v2 script at a natural voice pace does not fit 180s — the extra 8s live in S1/S6.
+// The BGM (exactly 180s) ends during the S6 landing, which is already the quiet fade-out.
+var TOTAL=188;
 
 // ── i18n ────────────────────────────────────────
 var LANG=(navigator.language||'ja').toLowerCase().indexOf('ja')===0?'ja':'en';
 
 // To use pre-recorded narration, drop files at audio/<lang>/<id>.mp3 and set AUDIO_BASE='audio'.
 // While null, the app falls back to Web Speech API (dev only — final product should use neural TTS files).
-var AUDIO_BASE=null;
+var AUDIO_BASE='audio';   // 2026-07-04: 仮ナレーション（edge-tts Nanami +15%）を audio/<lang>/<id>.mp3 に配置。本人録音で差し替え予定
 
 var UI={
   ja:{ titleHint:'タップして始める', legalH:'ご利用の前に',
@@ -238,44 +240,44 @@ var LEGAL={
 
 // ── scenes & narration (id = future audio file name) ──
 var SCENES=[
- {s:0,e:56,label:{ja:'Scene 01 — 深呼吸',en:'Scene 01 — Breathe'},lines:[
-   {at:1.2,id:'s01a',ja:'これから3分間のリチューニングを始めますので、楽な姿勢で腰掛けます。',en:'We will now begin three minutes of retuning. Settle into a comfortable seat.'},
-   {at:4.2,id:'s01a2',ja:'画面の中に座っているのは、あなた自身です。',en:'The one sitting on the screen is you.'},
-   {at:6,id:'s01b',ja:'まずは大きな深呼吸を3回します。鼻から、すって',en:'First, three deep breaths. In through your nose…'},
-   {at:11,id:'s01c',ja:'とめて',en:'Hold…'},
-   {at:13,id:'s01d',ja:'口先からゆっくり長く息を吐きだします',en:'And breathe out, long and slow, through your lips.'},
-   {at:22.5,id:'s01e',ja:'すって',en:'Breathe in…'},
-   {at:28,id:'s01f',ja:'とめて',en:'Hold…'},
-   {at:30,id:'s01g',ja:'ゆっくりと吐ききりましょう',en:'And breathe all the way out, slowly.'},
-   {at:39.5,id:'s01h',ja:'最後にもう一度、すって',en:'One last time — breathe in…'},
-   {at:45,id:'s01i',ja:'とめて',en:'Hold…'},
-   {at:47,id:'s01j',ja:'はいて',en:'And out.'}
+ {s:0,e:66,label:{ja:'Scene 01 — 深呼吸',en:'Scene 01 — Breathe'},lines:[
+   {at:0.8,id:'s01a',ja:'これから3分間のリチューニングを始めますので、楽な姿勢で腰掛けます。',en:'We will now begin three minutes of retuning. Settle into a comfortable seat.'},
+   {at:6.8,id:'s01a2',ja:'画面の中に座っているのは、あなた自身です。',en:'The one sitting on the screen is you.'},
+   {at:11.3,id:'s01b',ja:'まずは大きな深呼吸を3回します。鼻から、すって',en:'First, three deep breaths. In through your nose…'},
+   {at:21,id:'s01c',ja:'とめて',en:'Hold…'},
+   {at:23,id:'s01d',ja:'口先からゆっくり長く息を吐きだします',en:'And breathe out, long and slow, through your lips.'},
+   {at:32.3,id:'s01e',ja:'すって',en:'Breathe in…'},
+   {at:38,id:'s01f',ja:'とめて',en:'Hold…'},
+   {at:40,id:'s01g',ja:'ゆっくりと吐ききりましょう',en:'And breathe all the way out, slowly.'},
+   {at:49.2,id:'s01h',ja:'最後にもう一度、すって',en:'One last time — breathe in…'},
+   {at:55,id:'s01i',ja:'とめて',en:'Hold…'},
+   {at:57,id:'s01j',ja:'はいて',en:'And out.'}
  ]},
- {s:56,e:70,label:{ja:'Scene 02 — 移る',en:'Scene 02 — Shift'},lines:[
-   {at:57,id:'s02a',ja:'いま、あなたの首元から、半透明なもう一人のあなたがあらわれました',en:'Just now, from the base of your neck, a translucent other you has appeared.'},
-   {at:64,id:'s02b',ja:'このとき、本体のあなたの「考え」や「気持ち」も、もう一人のあなたに移っていきます',en:'And with it, the thoughts and feelings of your body move into that other you.'}
+ {s:66,e:81,label:{ja:'Scene 02 — 移る',en:'Scene 02 — Shift'},lines:[
+   {at:66.6,id:'s02a',ja:'いま、あなたの首元から、半透明なもう一人のあなたがあらわれました',en:'Just now, from the base of your neck, a translucent other you has appeared.'},
+   {at:73,id:'s02b',ja:'このとき、本体のあなたの「考え」や「気持ち」も、もう一人のあなたに移っていきます',en:'And with it, the thoughts and feelings of your body move into that other you.'}
  ]},
- {s:70,e:88,label:{ja:'Scene 03 — 離れる',en:'Scene 03 — Drift'},lines:[
-   {at:71,id:'s03a',ja:'足元に目を向けてください。細いゴムが結ばれていて、本体のあなたの首元と繋がっています',en:'Look down at your feet. A thin elastic cord is tied there, joined to the neck of your body.'},
-   {at:77,id:'s03a2',ja:'自在に伸び縮みするこのゴムは、決して切れないので安心してください',en:'It stretches freely, and it never breaks — so you are safe.'},
-   {at:82,id:'s03b',ja:'ここは、上下や水平、垂直の感覚のない360度の空間です。自分の意思で、どこへでも自由に移動することができます',en:'This is a place with no up or down, no horizontal or vertical — a full 360 degrees. By your own will, you can move anywhere.'}
+ {s:81,e:107,label:{ja:'Scene 03 — 離れる',en:'Scene 03 — Drift'},lines:[
+   {at:81.5,id:'s03a',ja:'足元に目を向けてください。細いゴムが結ばれていて、本体のあなたの首元と繋がっています',en:'Look down at your feet. A thin elastic cord is tied there, joined to the neck of your body.'},
+   {at:89.8,id:'s03a2',ja:'自在に伸び縮みするこのゴムは、決して切れないので安心してください',en:'It stretches freely, and it never breaks — so you are safe.'},
+   {at:95.8,id:'s03b',ja:'ここは、上下や水平、垂直の感覚のない360度の空間です。自分の意思で、どこへでも自由に移動することができます',en:'This is a place with no up or down, no horizontal or vertical — a full 360 degrees. By your own will, you can move anywhere.'}
  ]},
- {s:88,e:150,label:{ja:'Scene 04 — 俯瞰',en:'Scene 04 — Behold'},lines:[
-   {at:89,id:'s04a',ja:'さぁ、好きな角度から、好きな距離で、座っているあなた自身を眺めてみましょう',en:'Now — from any angle, at any distance, look upon yourself sitting there.'},
-   {at:100,id:'s04b',ja:'頭のてっぺんから足裏まで、ふだんなら自分の目で見ることのできない角度です',en:'From the top of your head to the soles of your feet — angles your own eyes can never see.'},
-   {at:110,id:'s04q1',q:true,ja:'さて、座っているあなたは、いま、何を考えているでしょう？',en:'So — the you sitting there: what are they thinking, right now?'},
-   {at:121,id:'s04q2',q:true,ja:'いま、どんな気持ちでいるでしょう？',en:'And how are they feeling, right now?'},
-   {at:130,id:'s04q3',q:true,ja:'そして、筋肉の張り具合は？　張っているでしょうか？　ゆるんでいるでしょうか？',en:'And the muscles — are they tense? Or are they at ease?'},
-   {at:140,id:'s04c',ja:'ただ気づくだけで、変えようとする必要はありません',en:'Simply notice. There is no need to change anything.'},
-   {at:144.5,id:'s04c2',ja:'考えや気持ちは、浮かんでは流れて消えていきます',en:'Thoughts and feelings rise, drift, and dissolve.'}
+ {s:107,e:159,label:{ja:'Scene 04 — 俯瞰',en:'Scene 04 — Behold'},lines:[
+   {at:107.5,id:'s04a',ja:'さぁ、好きな角度から、好きな距離で、座っているあなた自身を眺めてみましょう',en:'Now — from any angle, at any distance, look upon yourself sitting there.'},
+   {at:114.5,id:'s04b',ja:'頭のてっぺんから足裏まで、ふだんなら自分の目で見ることのできない角度です',en:'From the top of your head to the soles of your feet — angles your own eyes can never see.'},
+   {at:121.5,id:'s04q1',q:true,ja:'さて、座っているあなたは、いま、何を考えているでしょう？',en:'So — the you sitting there: what are they thinking, right now?'},
+   {at:130,id:'s04q2',q:true,ja:'いま、どんな気持ちでいるでしょう？',en:'And how are they feeling, right now?'},
+   {at:137,id:'s04q3',q:true,ja:'そして、筋肉の張り具合は？　張っているでしょうか？　ゆるんでいるでしょうか？',en:'And the muscles — are they tense? Or are they at ease?'},
+   {at:149,id:'s04c',ja:'ただ気づくだけで、変えようとする必要はありません',en:'Simply notice. There is no need to change anything.'},
+   {at:153.6,id:'s04c2',ja:'考えや気持ちは、浮かんでは流れて消えていきます',en:'Thoughts and feelings rise, drift, and dissolve.'}
  ]},
- {s:150,e:168,label:{ja:'Scene 05 — 戻る',en:'Scene 05 — Return'},lines:[
-   {at:151,id:'s05a',ja:'それでは、ゆっくりと本体のあなたの体へ戻っていきましょう',en:'Now, slowly, let us return to your body.'},
-   {at:160,id:'s05b',ja:'離れていたあなたが静かに自分の体へ帰ってきます',en:'The you that drifted away comes quietly home.'}
+ {s:159,e:177,label:{ja:'Scene 05 — 戻る',en:'Scene 05 — Return'},lines:[
+   {at:159.6,id:'s05a',ja:'それでは、ゆっくりと本体のあなたの体へ戻っていきましょう',en:'Now, slowly, let us return to your body.'},
+   {at:168,id:'s05b',ja:'離れていたあなたが静かに自分の体へ帰ってきます',en:'The you that drifted away comes quietly home.'}
  ]},
- {s:168,e:180,label:{ja:'Scene 06 — 着地',en:'Scene 06 — Land'},lines:[
-   {at:169,id:'s06a',ja:'ノイズが鎮まり、ふだんのあなた自身に戻りました',en:'The noise has settled. You are your everyday self again.'},
-   {at:175,id:'s06b',ja:'あなたのペースで目を開けてください',en:'In your own time, gently open your eyes.'}
+ {s:177,e:188,label:{ja:'Scene 06 — 着地',en:'Scene 06 — Land'},lines:[
+   {at:177.5,id:'s06a',ja:'ノイズが鎮まり、ふだんのあなた自身に戻りました',en:'The noise has settled. You are your everyday self again.'},
+   {at:184,id:'s06b',ja:'あなたのペースで目を開けてください',en:'In your own time, gently open your eyes.'}
  ]}
 ];
 function lineText(l){return l[LANG]||l.ja;}
@@ -338,7 +340,7 @@ function stopBGM(){
 // ═══ NARRATION (audio file first, Web Speech fallback) ═══
 var curAudio=null;
 function stopNarration(){ try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(e){} try{ if(curAudio){curAudio.pause();curAudio=null;} }catch(e){} }
-var NARRATION_VOICE=false;   // false = subtitles only (no spoken voice). Set true to re-enable narration audio.
+var NARRATION_VOICE=true;    // true = 音声ナレーションON（audio/<lang>/ の仮音声。falseで字幕のみに戻る）
 function playLine(l){
   stopNarration();
   if(!NARRATION_VOICE) return;            // voice off — on-screen text (subtitles) still shows
@@ -851,19 +853,19 @@ function updateThread(e,dt){
 // All quiet, meditative, cinematic. Tune these numbers freely.
 var CAM_KEYS=[
   {t:0,   az:0,   el:2,  r:5.2, ty:0.00, roll:0},   // 0:00  sit quietly, near eye-level in front (breath-ring aligns)
-  {t:56,  az:5,   el:3,  r:5.1, ty:0.00, roll:0},   // 0:56  breathing (3×17s +1s lead-in) — the faintest drift only
-  {t:70,  az:46,  el:13, r:5.5, ty:0.08, roll:2},   // 1:10  the viewpoint lifts away from the neck
-  {t:73,  az:57,  el:14, r:5.55,ty:-0.50,roll:3},   // 1:13  「足元に目を向けて」— gaze dips to our feet & the cord
-  {t:80,  az:83,  el:17, r:5.67,ty:0.09, roll:4},   // 1:20  gaze lifts back as the cord line lands
-  {t:88,  az:112, el:21, r:5.8, ty:0.10, roll:5},   // 1:28  slow horizontal orbit — the side
-  {t:103, az:180, el:-16,r:5.6, ty:0.06, roll:9},   // 1:43  from BELOW, looking up (仰視 — 絵コンテS4の下から視点)
-  {t:118, az:250, el:14, r:6.0, ty:0.12, roll:12},  // 1:58  rising past the side-back
-  {t:132, az:310, el:46, r:5.5, ty:0.10, roll:17},  // 2:12  high & behind, looking down
-  {t:140, az:360, el:64, r:5.1, ty:0.06, roll:22},  // 2:20  diagonal-overhead, horizon tilted (天地が薄れる)
-  {t:151, az:432, el:40, r:5.2, ty:0.04, roll:12},  // 2:31  begin the descent home
-  {t:162, az:498, el:18, r:4.8, ty:0.00, roll:4},   // 2:42  lower, drawing closer
-  {t:168, az:540, el:11, r:4.4, ty:-0.04,roll:0},   // 2:48  back of the neck — the connection point
-  {t:180, az:540, el:9,  r:4.2, ty:-0.04,roll:0}    // 3:00  settle, still
+  {t:66,  az:5,   el:3,  r:5.1, ty:0.00, roll:0},   // 1:06  breathing (intro + 3×17s) — the faintest drift only
+  {t:81,  az:46,  el:13, r:5.5, ty:0.08, roll:2},   // 1:21  the viewpoint lifts away from the neck
+  {t:84,  az:57,  el:14, r:5.55,ty:-0.50,roll:3},   // 1:24  「足元に目を向けて」— gaze dips to our feet & the cord
+  {t:91,  az:83,  el:17, r:5.67,ty:0.09, roll:4},   // 1:31  gaze lifts back as the cord line lands
+  {t:107, az:112, el:21, r:5.8, ty:0.10, roll:5},   // 1:47  slow horizontal orbit — the side
+  {t:120, az:180, el:-16,r:5.6, ty:0.06, roll:9},   // 2:00  from BELOW, looking up (仰視 — 絵コンテS4の下から視点)
+  {t:132, az:250, el:14, r:6.0, ty:0.12, roll:12},  // 2:12  rising past the side-back
+  {t:144, az:310, el:46, r:5.5, ty:0.10, roll:17},  // 2:24  high & behind, looking down
+  {t:151, az:360, el:64, r:5.1, ty:0.06, roll:22},  // 2:31  diagonal-overhead, horizon tilted (天地が薄れる)
+  {t:160, az:432, el:40, r:5.2, ty:0.04, roll:12},  // 2:40  begin the descent home
+  {t:171, az:498, el:18, r:4.8, ty:0.00, roll:4},   // 2:51  lower, drawing closer
+  {t:177, az:540, el:11, r:4.4, ty:-0.04,roll:0},   // 2:57  back of the neck — the connection point
+  {t:188, az:540, el:9,  r:4.2, ty:-0.04,roll:0}    // 3:08  settle, still
 ];
 var _vpPos=new THREE.Vector3(),_vpTgt=new THREE.Vector3(),_vpFwd=new THREE.Vector3(),_vpUp=new THREE.Vector3();
 function applyViewpointCamera(e){
@@ -887,15 +889,15 @@ function applyViewpointCamera(e){
 function applyViewpointFrame(e,dt){
   setTransOp(0);                                            // keep the (unused) human double hidden
   ndot.visible=false; nglow.visible=false; bGlowMat.opacity=0; glowMat.opacity=0; neckMat.emissiveIntensity=0;
-  if(e>=5&&e<56){ if(!bRunning) showBreath(true); }         // ring starts after the settle-in line; 3×17s breaths (5–56s)
+  if(e>=15&&e<66){ if(!bRunning) showBreath(true); }        // ring starts as s01b's「すって」lands; 3×17s breaths (15–66s)
   // Zero-g tumble (user 2026-07-04, order fixed): across S4 the seated body makes TWO full
   // revolutions in sequence — first HORIZONTAL (360° around Y, 88–118s: every side sweeps past),
   // then VERTICAL (360° head-over-heels around X, 118–150s: soles rise into view mid-turn).
   // Each revolution eases from stillness to stillness, and 360°≡0° so the body simply IS
   // upright again as S4 ends — nothing to "undo" in S5. A whisper of roll keeps it organic.
   if(bodyPivotG){
-    var p1=eio(c01((e-88)/30));                        // horizontal revolution (1:28–1:58)
-    var p2=eio(c01((e-118)/32));                       // then vertical revolution (1:58–2:30)
+    var p1=eio(c01((e-107)/25));                       // horizontal revolution (1:47–2:12)
+    var p2=eio(c01((e-132)/27));                       // then vertical revolution (2:12–2:39)
     var organ=0.08*(Math.sin(Math.PI*p1)+Math.sin(Math.PI*p2)); // zero at every boundary
     try{ bodyPivotG.rotation.set(-Math.PI*2*p2, -Math.PI*2*p1, organ); }catch(e2){}
   }
@@ -903,28 +905,28 @@ function applyViewpointFrame(e,dt){
   // back and settles INTO the seated body, dissolving as it merges — and the body answers
   // with a soft glow. The thread has already faded (its journey is over); the mist IS the return.
   if(mistPivotG){
-    if(e>=150&&e<170){
+    if(e>=159&&e<179){
       if(!_mistArmed){ _mistArmed=true;
         _mistFrom.copy(cam.position).lerp(TARGET,0.42);
         _mistFrom.y=Math.max(TARGET.y-0.2,Math.min(TARGET.y+1.2,_mistFrom.y)); }
-      var mp5=eio(c01((e-150)/14));                     // drift home over ~14s
+      var mp5=eio(c01((e-159)/14));                     // drift home over ~14s
       mistPivotG.visible=true;
       try{ mistPivotG.position.lerpVectors(_mistFrom,bodyPivotG?bodyPivotG.position:TARGET,mp5); }catch(e2){}
       try{ mistPivotG.scale.setScalar(0.82-0.06*mp5); }catch(e2){}   // clearly smaller than the body (user 2026-07-04) — slips INSIDE as it merges
-      var mo=c01((e-150)/3)*(1-eio(c01((e-164)/5)));    // breathe in → dissolve as it merges
+      var mo=c01((e-159)/3)*(1-eio(c01((e-173)/5)));    // breathe in → dissolve as it merges
       for(var mi=0;mi<mistMats.length;mi++) mistMats[mi].m.opacity=mo*mistMats[mi].k;
-      bGlowMat.opacity=0.16*eio(c01((e-160)/8));        // the body softly glows as it absorbs
+      bGlowMat.opacity=0.16*eio(c01((e-169)/8));        // the body softly glows as it absorbs
     } else {
       mistPivotG.visible=false;
-      if(e>=170) bGlowMat.opacity=Math.max(0,0.16*(1-(e-170)/8));  // afterglow settles away
-      if(e<150) _mistArmed=false;                       // re-arm for replay
+      if(e>=179) bGlowMat.opacity=Math.max(0,0.16*(1-(e-179)/8));  // afterglow settles away
+      if(e<159) _mistArmed=false;                       // re-arm for replay
     }
   }
   applyViewpointCamera(e);
-  // thread appears as the viewpoint lifts off (~0:56) and stays through the RETURN — in the
+  // thread appears as the viewpoint lifts off (~1:06) and stays through the RETURN — in the
   // user's concept sketch the thread and the mist-you coexist while it comes home. It dissolves
-  // together with the merge (~2:46–2:52), just before the landing glow.
-  rubMat.opacity = THREAD_OPACITY * c01((e-56)/4) * c01((172-e)/6);
+  // together with the merge (~2:51–2:57), just before the landing glow.
+  rubMat.opacity = THREAD_OPACITY * c01((e-66)/4) * c01((177-e)/6);
   if(rubMat.opacity>0.004) updateThread(e,dt);
 }
 
@@ -988,9 +990,9 @@ function animateFrame(now){
   lastT=now; var e=elapsed; fT+=dt;
   // Sitting-Idle sway: slowed to 40% from start through the breathing block (user 2026-07-04 —
   // the figure should barely stir while the viewer settles into the 3 slow breaths)
-  if(mixerBody) mixerBody.update(dt * (started && elapsed<56 ? 0.4 : 1));
+  if(mixerBody) mixerBody.update(dt * (started && elapsed<66 ? 0.4 : 1));
   if(mixerDouble) mixerDouble.update(dt);
-  if(SHOW_TRANSPARENT_BODY && started && mixerDouble && elapsed>=55 && elapsed<169){   // vary the double's motion while it's active
+  if(SHOW_TRANSPARENT_BODY && started && mixerDouble && elapsed>=64 && elapsed<178){   // vary the double's motion while it's active
     // flying mixes in whenever the double surges across a far↔near transition; drifting clips while it hovers
     if((!doubleAction || doubleFlightWant!==curDoubleFly) && elapsed>=doubleSwitchAt){
       switchDoubleClip(doubleFlightWant?'flying':null);
@@ -1005,13 +1007,13 @@ function animateFrame(now){
   if(!started){ lookFrom(sph(0.4,0.28,5.4)); }
   if(!modelReady){ renderer.render(scene3,cam); return; }
   bp3Mat.opacity=0;
-  if(started && e>=56 && bRunning) showBreath(false); // breathing guide only in S1 (ends 0:56)
+  if(started && e>=66 && bRunning) showBreath(false); // breathing guide only in S1 (ends 1:06)
 
   if(!started){
     setTransOp(0); rubMat.opacity=0;
   } else if(!SHOW_TRANSPARENT_BODY){                 // ===== NEW DEFAULT: the camera IS the viewpoint =====
     applyViewpointFrame(e,dt);
-  } else if(e<56){                                   // S1 — (old human-double choreography; runs only if SHOW_TRANSPARENT_BODY) seated full body + breathing-ring guide
+  } else if(e<66){                                   // S1 — (old human-double choreography; runs only if SHOW_TRANSPARENT_BODY) seated full body + breathing-ring guide
     setTransOp(0); rubMat.opacity=0; bGlowMat.opacity=0;
     try{ trans.position.copy(TARGET); trans.rotation.set(0,0,0); }catch(e2){}
     try{ cam.position.set(0,bodyCenterY,bodyFitDist); cam.up.set(0,1,0); cam.lookAt(0,bodyCenterY,0); }catch(e2){}
@@ -1019,7 +1021,7 @@ function animateFrame(now){
     ndot.visible=true; nglow.visible=true;            // restore the portal mark (in case of replay)
     if(!bRunning) showBreath(true);
     updateRubber();
-  } else if(e<70){                                   // S2 the double appears; thoughts & feelings shift into it
+  } else if(e<81){                                   // S2 the double appears; thoughts & feelings shift into it
     var p=sp(e,SCENES[1]),pp=pop(p);
     setTransOp(c01(p*4)*0.5); rubMat.opacity=c01(p*4)*0.55;
     var tgt0=sph(WP[0].az,WP[0].el,WP[0].r);
@@ -1032,14 +1034,14 @@ function animateFrame(now){
     lookFrom(sph(0.55+fT*0.05,0.22,5.3));            // wider 3rd-person so the pop is readable
     if(p<0.05) resetDouble();
     updateRubber();
-  } else if(e<88){                                   // S3 drift — clear 3rd-person: body centered, double floats nearby
+  } else if(e<107){                                  // S3 drift — clear 3rd-person: body centered, double floats nearby
     setTransOp(0.5); rubMat.opacity=0.5;
     try{ trans.position.copy(doubleStep(dt,0.6)); }catch(e2){}   // stay nearer during the first drift
     lookAtFace(trans,dt);
     lookFrom(sph(0.4+fT*0.12, 0.18+Math.sin(fT*0.25)*0.22, 5.8));
     neckMat.emissiveIntensity=0.7+Math.sin(fT)*0.15;
     updateRubber();
-  } else if(e<150){                                  // S4 behold — 3rd-person orbit, varied angle & distance
+  } else if(e<159){                                  // S4 behold — 3rd-person orbit, varied angle & distance
     setTransOp(0.46); rubMat.opacity=0.46;
     var radScale=0.96+Math.sin(fT*0.22)*0.12;   // mild breathing; the near/far swing lives in the waypoints now
     try{ trans.position.copy(doubleStep(dt,radScale)); }catch(e2){}
@@ -1054,7 +1056,7 @@ function animateFrame(now){
     cam.position.copy(_mid4).add(_off4); cam.up.set(0,1,0); cam.lookAt(_mid4);
     neckMat.emissiveIntensity=0.65+Math.sin(fT*0.9)*0.12;
     updateRubber();
-  } else if(e<168){                                  // S5 return to neck — 3rd-person, settling front
+  } else if(e<177){                                  // S5 return to neck — 3rd-person, settling front
     var p5=sp(e,SCENES[4]),ep=eio(p5);
     setTransOp(lp(0.46,0.12,ep)); rubMat.opacity=lp(0.46,0.2,ep);
     try{ trans.position.lerp(neckO,Math.min(dt*1.6,ep*0.12+0.02)); }catch(e2){}
@@ -1078,7 +1080,7 @@ function animateFrame(now){
     if(rubMat.opacity>0) updateRubber();
   }
   // gaze lock runs last, after the float clip + body orientation are applied, so the eyes always win
-  if(SHOW_TRANSPARENT_BODY && started && e>=30 && e<168) applyHeadGaze();
+  if(SHOW_TRANSPARENT_BODY && started && e>=30 && e<177) applyHeadGaze();
   // don't just rely on opacity:0 — some mobile GPUs still draw a transparent line as a hairline.
   // Skip drawing the cord entirely when it's effectively invisible.
   rubLine.visible = rubMat.opacity > 0.004;
