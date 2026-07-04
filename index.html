@@ -928,7 +928,7 @@ function showLine(l){
 // (with the second mark) / whether journaling was chosen & saved. NO journal content,
 // NO audio, NO personal data — matches the updated Terms §5. Endpoint = a Google Apps
 // Script web app writing to the owner's spreadsheet. Empty URL = tracking fully off.
-var ANALYTICS_URL='';                        // ← GASウェブアプリのURLを設定すると送信が有効になる
+var ANALYTICS_URL='https://script.google.com/macros/s/AKfycbx0-kMKCHe92xhjrfHfibJg0hDeeXo3z89FzmBh1DyIt1RElz1s2K58-HvAHe67dzpL6A/exec';  // GAS→オーナーのスプレッドシート（2026-07-04設定・匿名利用ログのみ）
 var APP_V='v5.7';
 function anonId(){ try{ var k=localStorage.getItem('retune_anon_id');
   if(!k){ k='a'+Math.random().toString(36).slice(2,10)+Date.now().toString(36); localStorage.setItem('retune_anon_id',k); }
