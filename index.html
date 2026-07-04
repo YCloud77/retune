@@ -202,14 +202,14 @@ var LEGAL={
 <h3>2. 医療・効果に関する免責</h3>本アプリは医療行為・診断・治療ではありません。病気の治療や予防を目的とするものではなく、医師その他の専門家による助言の代替にはなりません。心身に不調・疾患のある方、通院中・服薬中の方、妊娠中の方は、ご利用前に専門家にご相談ください。
 <h3>3. <span class="warn">安全に関する重要な注意</span></h3><span class="warn">運転中・自転車や乗り物の操作中・歩行中・機械や火気の取り扱い中・その他注意を要するいかなる状況でも、絶対に本アプリを使用しないでください。</span>本アプリは意識を内側に向け、視覚イメージに集中するため、周囲への注意が著しく低下します。必ず安全で、座るか横になれる落ち着いた場所で行ってください。気分が悪くなった場合は、すぐに中止してください。
 <h3>4. 光・音について</h3>画面には光の演出が、音声にはナレーションや鐘の音が含まれます。光や音に過敏な方、てんかんの既往がある方はご注意ください。音量は事前に適切な大きさに調整してください。
-<h3>5. プライバシー</h3>本アプリは、体験のための個人情報を収集・送信しません。設定はお使いの端末内にのみ保存されます。
+<h3>5. プライバシー</h3>本アプリは、氏名・連絡先などの個人情報を収集しません。ジャーナリングに書いた内容・音声は<b>送信されず、お使いの端末内にのみ保存</b>されます。体験の改善のため、個人を特定できない匿名の利用状況（セッションの開始・完了・中断の時点、進んだシーン、ジャーナリング機能を使ったかどうか）のみを送信することがあります。
 <h3>6. 自己責任</h3>本アプリのご利用は、利用者ご自身の判断と責任において行うものとします。提供者は、利用に起因して生じたいかなる損害についても責任を負いません。
 <div class="end">— 以上 —</div>`,
   en:`<h3>1. About this app</h3>RETUNE is a self-care / relaxation experience that uses deep breathing and imagery (a shift of perspective) to calm the mind and body and change your state of awareness.
 <h3>2. Medical disclaimer</h3>This app is not medical care, diagnosis, or treatment. It is not intended to treat or prevent any condition and is not a substitute for professional advice. If you have any physical or mental health condition, are under medical care or medication, or are pregnant, consult a professional before use.
 <h3>3. <span class="warn">Important safety notice</span></h3><span class="warn">Never use this app while driving, operating any vehicle or machinery, walking, handling fire, or in any situation that requires your attention.</span> The experience turns your awareness inward and reduces attention to your surroundings. Use only in a safe, calm place where you can sit or lie down. Stop immediately if you feel unwell.
 <h3>4. Light & sound</h3>The screen contains light effects; the audio contains narration and bell sounds. Take care if you are sensitive to light or sound, or have a history of epilepsy. Set the volume to a comfortable level beforehand.
-<h3>5. Privacy</h3>This app does not collect or transmit personal data. Settings are stored only on your device.
+<h3>5. Privacy</h3>This app does not collect personal information such as your name or contact details. Your journaling text and voice are <b>never transmitted — they are stored only on your device</b>. To improve the experience, the app may send only anonymous, non-identifying usage data (when a session starts, completes, or is stopped; which scene was reached; and whether the journaling feature was used).
 <h3>6. Your responsibility</h3>Use of this app is at your own discretion and risk. The provider is not liable for any damages arising from its use.
 <div class="end">— end —</div>`
 };
@@ -923,6 +923,28 @@ function showLine(l){
     narTxt.innerHTML=html; narDiv.style.opacity='1'; playLine(l);
   },450);
 }
+// ── ANONYMOUS USAGE ANALYTICS (2026-07-04, user-approved minimal-risk plan) ──
+// Collects ONLY anonymous usage events: session start / scene reached / complete or exit
+// (with the second mark) / whether journaling was chosen & saved. NO journal content,
+// NO audio, NO personal data — matches the updated Terms §5. Endpoint = a Google Apps
+// Script web app writing to the owner's spreadsheet. Empty URL = tracking fully off.
+var ANALYTICS_URL='';                        // ← GASウェブアプリのURLを設定すると送信が有効になる
+var APP_V='v5.7';
+function anonId(){ try{ var k=localStorage.getItem('retune_anon_id');
+  if(!k){ k='a'+Math.random().toString(36).slice(2,10)+Date.now().toString(36); localStorage.setItem('retune_anon_id',k); }
+  return k; }catch(e){ return 'anon'; } }
+function track(ev,extra){
+  if(!ANALYTICS_URL) return;
+  try{
+    var p=JSON.stringify({id:anonId(),v:APP_V,lang:LANG,ev:ev,t:Math.round(elapsed||0),extra:extra||'',ts:Date.now()});
+    // text/plain + sendBeacon → no CORS preflight, survives page unload (exit events included)
+    if(navigator.sendBeacon){ navigator.sendBeacon(ANALYTICS_URL,new Blob([p],{type:'text/plain'})); }
+    else{ fetch(ANALYTICS_URL,{method:'POST',mode:'no-cors',keepalive:true,headers:{'Content-Type':'text/plain'},body:p}); }
+  }catch(e){}
+}
+window.addEventListener('pagehide',function(){ if(started&&!ended) track('exit_page'); });
+
+var lastSceneIdx=-1;
 function updateHUD(e){
   document.getElementById('pf').style.width=(e/TOTAL*100)+'%';
   var m=Math.floor(e/60),s=Math.floor(e%60).toString().padStart(2,'0');
@@ -930,6 +952,7 @@ function updateHUD(e){
   var cur=null;
   for(var i=0;i<SCENES.length;i++){ var sc=SCENES[i];
     if(e>=sc.s&&e<sc.e){ document.getElementById('sl').textContent=sc.label[LANG]||sc.label.ja;
+      if(i!==lastSceneIdx){ lastSceneIdx=i; track('scene','s0'+(i+1)); }
       for(var j=0;j<sc.lines.length;j++) if(e>=sc.lines[j].at) cur=sc.lines[j]; break; } }
   showLine(cur);
 }
@@ -1120,6 +1143,7 @@ function startExperience(){
 }
 function beginPlay(){
   started=true; ended=false; elapsed=0; playing=true; paused=false; lastT=null; lastLine=null;
+  lastSceneIdx=-1; track('session_start');
   resetDouble();
   if(mixerDouble){ try{ mixerDouble.stopAllAction(); }catch(e){} }
   doubleAction=null; doubleSwitchAt=0; doubleFloatReroll=1e9; doubleFlightWant=false; curDoubleFly=false;
@@ -1130,6 +1154,7 @@ function beginPlay(){
 }
 function finishExperience(){
   playing=false; ended=true; stopNarration(); stopBGM();
+  track('complete');
   showLine(null); showBreath(false);
   document.getElementById('hud').style.opacity='0';
   document.getElementById('ctrl').style.display='none';
@@ -1144,7 +1169,7 @@ document.getElementById('bp').addEventListener('click',function(){
   if(paused){ stopNarration(); try{ if(bgmAudio) bgmAudio.pause(); }catch(e){} }   // keep the binaural track in sync
   else { lastLine=null; try{ if(bgmAudio) bgmAudio.play().catch(function(){}); }catch(e){} }
 });
-document.getElementById('br').addEventListener('click',function(){ location.reload(); });
+document.getElementById('br').addEventListener('click',function(){ if(started&&!ended) track('exit_button'); location.reload(); });
 document.getElementById('againBtn').addEventListener('click',function(){
   document.getElementById('end').classList.add('hidden'); beginPlay();
 });
@@ -1192,16 +1217,18 @@ function jRenderLog(){
 }
 document.getElementById('journalBtn').addEventListener('click',function(){
   ['jt1','jt2','jt3'].forEach(function(id){ document.getElementById(id).value=''; });
-  jShow('journal');
+  track('journal_go'); jShow('journal');
 });
-document.getElementById('skipBtn').addEventListener('click',function(){ jShow('title'); });
+document.getElementById('skipBtn').addEventListener('click',function(){ track('journal_skip'); jShow('title'); });
 document.getElementById('jSave').addEventListener('click',function(){
   srStop();
   var e={ d:new Date().toISOString(),
     q1:document.getElementById('jt1').value.trim(),
     q2:document.getElementById('jt2').value.trim(),
     q3:document.getElementById('jt3').value.trim() };
-  if(e.q1||e.q2||e.q3){ var l=jLoad(); l.push(e); try{ localStorage.setItem('retune_journal',JSON.stringify(l)); }catch(err){} }
+  if(e.q1||e.q2||e.q3){ var l=jLoad(); l.push(e); try{ localStorage.setItem('retune_journal',JSON.stringify(l)); }catch(err){}
+    // analytics: only WHICH questions were answered (e.g. "110") — never the content
+    track('journal_saved',(e.q1?'1':'0')+(e.q2?'1':'0')+(e.q3?'1':'0')); }
   this.textContent=UI[LANG].jSaved;
   var self=this; setTimeout(function(){ self.textContent=UI[LANG].jSave; jRenderLog(); jShow('journalLog'); },500);
 });
