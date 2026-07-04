@@ -249,9 +249,9 @@ var LEGAL={
 // ── scenes & narration (id = future audio file name) ──
 var SCENES=[
  {s:0,e:66,label:{ja:'Scene 01 — 深呼吸',en:'Scene 01 — Breathe'},lines:[
-   {at:0.8,id:'s01a',ja:'これから3分間のリチューニングを始めますので、楽な姿勢で腰掛けます。',en:'We will now begin three minutes of retuning. Settle into a comfortable seat.'},
-   {at:6.8,id:'s01a2',ja:'画面の中に座っているのは、あなた自身です。',en:'The one sitting on the screen is you.'},
-   {at:11.3,id:'s01b',ja:'まずは大きな深呼吸を3回します。鼻から、すって',en:'First, three deep breaths. In through your nose…'},
+   {at:0.8,id:'s01a',ja:'これから3分間のリチューニングを始めますので、楽な姿勢で腰掛けます',en:'We will now begin three minutes of retuning. Settle into a comfortable seat.'},
+   {at:6.8,id:'s01a2',ja:'画面の中に座っているのは、あなた自身です',en:'The one sitting on the screen is you.'},
+   {at:11.3,id:'s01b',ja:'まずは大きな深呼吸を3回します\n鼻から、すって',en:'First, three deep breaths. In through your nose…'},
    {at:21,id:'s01c',ja:'とめて',en:'Hold…'},
    {at:23,id:'s01d',ja:'口先からゆっくり長く息を吐きだします',en:'And breathe out, long and slow, through your lips.'},
    {at:32.3,id:'s01e',ja:'すって',en:'Breathe in…'},
@@ -266,9 +266,9 @@ var SCENES=[
    {at:73,id:'s02b',ja:'このとき、本体のあなたの「考え」や「気持ち」も、もう一人のあなたに移っていきます',en:'And with it, the thoughts and feelings of your body move into that other you.'}
  ]},
  {s:81,e:107,label:{ja:'Scene 03 — 離れる',en:'Scene 03 — Drift'},lines:[
-   {at:81.5,id:'s03a',ja:'足元に目を向けてください。細いゴムが結ばれていて、本体のあなたの首元と繋がっています',en:'Look down at your feet. A thin elastic cord is tied there, joined to the neck of your body.'},
+   {at:81.5,id:'s03a',ja:'足元に目を向けてください\n細いゴムが結ばれていて、本体のあなたの首元と繋がっています',en:'Look down at your feet. A thin elastic cord is tied there, joined to the neck of your body.'},
    {at:89.8,id:'s03a2',ja:'自在に伸び縮みするこのゴムは、決して切れないので安心してください',en:'It stretches freely, and it never breaks — so you are safe.'},
-   {at:95.8,id:'s03b',ja:'ここは、上下や水平、垂直の感覚のない360度の空間です。自分の意思で、どこへでも自由に移動することができます',en:'This is a place with no up or down, no horizontal or vertical — a full 360 degrees. By your own will, you can move anywhere.'}
+   {at:95.8,id:'s03b',ja:'ここは、上下や水平、垂直の感覚のない360度の空間です\n自分の意思で、どこへでも自由に移動することができます',en:'This is a place with no up or down, no horizontal or vertical — a full 360 degrees. By your own will, you can move anywhere.'}
  ]},
  {s:107,e:159,label:{ja:'Scene 04 — 俯瞰',en:'Scene 04 — Behold'},lines:[
    {at:107.5,id:'s04a',ja:'さぁ、好きな角度から、好きな距離で、座っているあなた自身を眺めてみましょう',en:'Now — from any angle, at any distance, look upon yourself sitting there.'},
@@ -946,8 +946,10 @@ function showLine(l){
   narDiv.style.opacity='0';
   fadeTO=setTimeout(function(){
     var html=lineText(l).replace(/\n/g,'<br>');
-    // 2文以上は必ず文末（。！？）で改行する（user 2026-07-04）。末尾の句点では改行しない
-    html=html.replace(/([。！？])(?!<br>|$)/g,'$1<br>');
+    // 2文以上は必ず文末で改行（user 2026-07-04）。「。」は表示しない方針（user 2026-07-05）——
+    // 台本側で「。」は削除/改行済みなので、ここでは残った「。」を保険で消し、！？のみ改行する。
+    html=html.replace(/。(?!<br>|$)/g,'<br>').replace(/。/g,'');
+    html=html.replace(/([！？])(?!<br>|$)/g,'$1<br>');
     if(l.q) html='<span class="q">'+html+'</span>';
     narTxt.innerHTML=html; narDiv.style.opacity='1'; playLine(l);
   },450);
