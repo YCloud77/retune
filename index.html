@@ -741,12 +741,18 @@ function updateThread(e,dt){
     _thA.add(_thOff); ax=_thA.x; ay=_thA.y; az=_thA.z;
   }
   else { ax=neckO.x; ay=neckO.y; az=neckO.z; }
-  // far end = viewer's ankle: below the frame's bottom edge, slightly ahead of the camera.
-  // Use the camera's REAL orientation (quaternion) so "screen-down" stays the bottom of the
-  // frame at any elevation/roll — overhead and under-views included.
-  _thFwd.set(0,0,-1).applyQuaternion(cam.quaternion);
-  _thDown.set(0,-1,0).applyQuaternion(cam.quaternion);
-  _thET.copy(cam.position).addScaledVector(_thFwd,0.85).addScaledVector(_thDown,1.15);
+  // far end: normally the VIEWER's ankle — below the frame's bottom edge, slightly ahead of
+  // the camera (screen-down from the camera's real quaternion, so it holds at any roll).
+  // But during the RETURN, the mist-you is on screen — so the cord connects the MIST body's
+  // ANKLE to the physical body's neck (user 2026-07-04). The elastic lag glides the endpoint
+  // over from "our" ankle to the mist's ankle, so the handoff reads as one continuous cord.
+  if(mistPivotG && mistPivotG.visible){
+    _thET.copy(ankleRel).multiplyScalar(mistPivotG.scale.x).add(mistPivotG.position);
+  } else {
+    _thFwd.set(0,0,-1).applyQuaternion(cam.quaternion);
+    _thDown.set(0,-1,0).applyQuaternion(cam.quaternion);
+    _thET.copy(cam.position).addScaledVector(_thFwd,0.85).addScaledVector(_thDown,1.15);
+  }
   var swx=Math.sin(e*0.45)*0.06, swz=Math.cos(e*0.37)*0.05;          // gentle zero-g sway
   _thET.x+=swx; _thET.z+=swz;
   if(!_thInit){ _thE.copy(_thET); _thInit=true; }
@@ -824,7 +830,7 @@ function applyViewpointFrame(e,dt){
       var mp5=eio(c01((e-150)/14));                     // drift home over ~14s
       mistPivotG.visible=true;
       try{ mistPivotG.position.lerpVectors(_mistFrom,bodyPivotG?bodyPivotG.position:TARGET,mp5); }catch(e2){}
-      try{ mistPivotG.scale.setScalar(0.95-0.03*mp5); }catch(e2){}   // a size smaller than the body — it slips INSIDE as it merges
+      try{ mistPivotG.scale.setScalar(0.82-0.06*mp5); }catch(e2){}   // clearly smaller than the body (user 2026-07-04) — slips INSIDE as it merges
       var mo=c01((e-150)/3)*(1-eio(c01((e-164)/5)));    // breathe in → dissolve as it merges
       for(var mi=0;mi<mistMats.length;mi++) mistMats[mi].m.opacity=mo*mistMats[mi].k;
       bGlowMat.opacity=0.16*eio(c01((e-160)/8));        // the body softly glows as it absorbs
