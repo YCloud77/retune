@@ -70,6 +70,25 @@ canvas{display:block;width:100%!important;height:100%!important;position:absolut
 #end{z-index:62}
 #end .msg{font-size:17px;letter-spacing:0.12em;color:#d8d8f5;font-weight:300;line-height:1.9}
 #end .again{margin-top:30px}
+.ghostBtn{margin-top:14px;font-size:12px;letter-spacing:0.2em;color:#9a9ac8;background:none;
+  border:1px solid rgba(154,154,200,0.35);border-radius:24px;padding:10px 26px;cursor:pointer}
+.ghostBtn:active{background:rgba(154,154,200,0.12)}
+.jhead{font-size:15px;letter-spacing:0.3em;color:#d8d8f5;font-weight:300;margin-bottom:22px}
+.jq{width:min(340px,84vw);margin-bottom:16px;text-align:left}
+.jlabel{font-size:12.5px;letter-spacing:0.08em;color:#b9b9e2;line-height:1.7;margin-bottom:6px}
+.jrow{display:flex;gap:8px;align-items:stretch}
+.jrow textarea{flex:1;background:rgba(20,20,44,0.7);border:1px solid rgba(154,154,200,0.3);border-radius:10px;
+  color:#e6e6fa;font-size:13px;line-height:1.6;padding:9px 11px;resize:none;font-family:inherit;outline:none}
+.jrow textarea:focus{border-color:rgba(185,185,240,0.6)}
+.mic{width:42px;border-radius:10px;border:1px solid rgba(154,154,200,0.3);background:rgba(20,20,44,0.7);
+  font-size:16px;cursor:pointer;color:#e6e6fa}
+.mic.rec{background:rgba(255,120,150,0.25);border-color:rgba(255,150,170,0.7)}
+.jhint{font-size:10.5px;color:#7d7da8;letter-spacing:0.06em;margin:2px 0 4px;min-height:14px}
+#jList{width:min(340px,84vw);max-height:52vh;overflow-y:auto;text-align:left}
+.jent{border-bottom:1px solid rgba(154,154,200,0.18);padding:12px 2px}
+.jdate{font-size:11px;letter-spacing:0.14em;color:#8d8dbd;margin-bottom:5px}
+.jent div.jrow2{font-size:12.5px;color:#d3d3ee;line-height:1.65;margin-top:2px}
+.jent .jk{color:#8d8dbd;font-size:11px}
 </style>
 </head>
 <body>
@@ -100,7 +119,25 @@ canvas{display:block;width:100%!important;height:100%!important;position:absolut
   <div id="hud"><div id="sl">RETUNE</div><div id="pb"><div id="pf"></div></div><div id="tl">0:00</div></div>
 
   <!-- end -->
-  <div id="end" class="screen hidden"><div class="msg" id="endMsg"></div><button class="primary again" id="againBtn"></button></div>
+  <div id="end" class="screen hidden"><div class="msg" id="endMsg"></div>
+    <button class="primary again" id="journalBtn"></button>
+    <button class="ghostBtn" id="skipBtn"></button>
+    <button class="ghostBtn" id="againBtn"></button>
+  </div>
+  <div id="journal" class="screen hidden">
+    <div class="jhead" id="jHead"></div>
+    <div class="jq"><div class="jlabel" id="jl1"></div><div class="jrow"><textarea id="jt1" rows="2"></textarea><button class="mic" id="jm1">🎤</button></div></div>
+    <div class="jq"><div class="jlabel" id="jl2"></div><div class="jrow"><textarea id="jt2" rows="2"></textarea><button class="mic" id="jm2">🎤</button></div></div>
+    <div class="jq"><div class="jlabel" id="jl3"></div><div class="jrow"><textarea id="jt3" rows="2"></textarea><button class="mic" id="jm3">🎤</button></div></div>
+    <div class="jhint" id="jHint"></div>
+    <button class="primary" id="jSave"></button>
+    <button class="ghostBtn" id="jHist"></button>
+  </div>
+  <div id="journalLog" class="screen hidden">
+    <div class="jhead" id="jHead2"></div>
+    <div id="jList"></div>
+    <button class="ghostBtn" id="jBack"></button>
+  </div>
 </div>
 <div id="ctrl"><button id="bp"></button><button id="br"></button></div>
 
@@ -134,14 +171,30 @@ var UI={
     scrollDone:'読み終わりました',
     start:'はじめる',
     safety:'⚠ 運転中・歩行中・作業中など、注意が必要な状況では絶対に行わないでください。安全で楽な姿勢が取れる場所で行ってください。',
-    end:'おつかれさまでした。\n静かに、整いました。', again:'もう一度', pause:'⏸', resume:'▶', exit:'✕' },
+    end:'おつかれさまでした。\n静かに、整いました。', again:'もう一度', pause:'⏸', resume:'▶', exit:'✕',
+    jGo:'ジャーナリングに進む', jSkip:'今日はこのまま終わる',
+    jHead:'ジャーナリング',
+    jq1:'俯瞰から見た「本体のあなた」は、何を考えていましたか？',
+    jq2:'「本体のあなた」は、どんな気持ちでいましたか？',
+    jq3:'それを見て、半透明のあなた自身は、どう感じましたか？',
+    jHintMic:'🎤 ボタンで音声入力ができます（話し終わったらもう一度押す）',
+    jHintNoMic:'この端末では音声入力が使えないため、文字で入力してください',
+    jSave:'保存する', jSaved:'保存しました', jHist:'これまでの記録', jBack:'もどる', jEmpty:'まだ記録はありません' },
   en:{ titleHint:'tap to begin', legalH:'Before you begin',
     agree:'I agree to the Terms and Disclaimer above',
     scrollHint:'↓ Please scroll and read to the end',
     scrollDone:'Thank you for reading',
     start:'Begin',
     safety:'⚠ Never do this while driving, walking, operating machinery, or in any situation requiring attention. Use only in a safe, comfortable position.',
-    end:"That's all for now.\nQuietly, you are retuned.", again:'Once more', pause:'⏸', resume:'▶', exit:'✕' }
+    end:"That's all for now.\nQuietly, you are retuned.", again:'Once more', pause:'⏸', resume:'▶', exit:'✕',
+    jGo:'Continue to journaling', jSkip:'Finish for today',
+    jHead:'JOURNALING',
+    jq1:'Seen from above — what was your body-self thinking?',
+    jq2:'How was your body-self feeling?',
+    jq3:'And watching that, how did the translucent you feel?',
+    jHintMic:'🎤 tap to speak (tap again when done)',
+    jHintNoMic:'Voice input is not available on this device — please type instead',
+    jSave:'Save', jSaved:'Saved', jHist:'Past entries', jBack:'Back', jEmpty:'No entries yet' }
 };
 
 var LEGAL={
@@ -164,40 +217,44 @@ var LEGAL={
 // ── scenes & narration (id = future audio file name) ──
 var SCENES=[
  {s:0,e:56,label:{ja:'Scene 01 — 深呼吸',en:'Scene 01 — Breathe'},lines:[
-   {at:2,id:'s01a',ja:'楽な姿勢で大丈夫です。座っていても、横になっていても構いません。',en:'Settle into a comfortable position. Sitting or lying down — either is fine.'},
-   {at:5.5,id:'s01b',ja:'それでは、ゆっくりと、深呼吸。鼻から、すって……',en:'Now, a slow, deep breath. In through your nose…'},
-   {at:11,id:'s01c',ja:'とめて……',en:'Hold…'},
-   {at:13,id:'s01d',ja:'口から、ゆっくり、はいて。',en:'And slowly out through your mouth.'},
-   {at:22.5,id:'s01e',ja:'もう一度。すって……',en:'Once more. Breathe in…'},
-   {at:28,id:'s01f',ja:'とめて……',en:'Hold…'},
-   {at:30,id:'s01g',ja:'はいて……ゆっくり。',en:'And out… slowly.'},
-   {at:39.5,id:'s01h',ja:'最後に、もう一度。すって……',en:'One last time. Breathe in…'},
-   {at:45,id:'s01i',ja:'とめて……',en:'Hold…'},
-   {at:47,id:'s01j',ja:'はいて。そのまま、呼吸に、任せます。',en:'And out. Now let the breath carry itself.'}
+   {at:1.2,id:'s01a',ja:'これから3分間のリチューニングを始めますので、楽な姿勢で腰掛けます。',en:'We will now begin three minutes of retuning. Settle into a comfortable seat.'},
+   {at:4.2,id:'s01a2',ja:'画面の中に座っているのは、あなた自身です。',en:'The one sitting on the screen is you.'},
+   {at:6,id:'s01b',ja:'まずは大きな深呼吸を3回します。鼻から、すって',en:'First, three deep breaths. In through your nose…'},
+   {at:11,id:'s01c',ja:'とめて',en:'Hold…'},
+   {at:13,id:'s01d',ja:'口先からゆっくり長く息を吐きだします',en:'And breathe out, long and slow, through your lips.'},
+   {at:22.5,id:'s01e',ja:'すって',en:'Breathe in…'},
+   {at:28,id:'s01f',ja:'とめて',en:'Hold…'},
+   {at:30,id:'s01g',ja:'ゆっくりと吐ききりましょう',en:'And breathe all the way out, slowly.'},
+   {at:39.5,id:'s01h',ja:'最後にもう一度、すって',en:'One last time — breathe in…'},
+   {at:45,id:'s01i',ja:'とめて',en:'Hold…'},
+   {at:47,id:'s01j',ja:'はいて',en:'And out.'}
  ]},
  {s:56,e:70,label:{ja:'Scene 02 — 移る',en:'Scene 02 — Shift'},lines:[
-   {at:57,id:'s02a',ja:'いま、あなたの首元から、すこし離れたところに——半透明の、もうひとつのあなたが、静かに、あらわれます。',en:'Now, a little away from the base of your neck — a translucent other you quietly appears.'},
-   {at:65,id:'s02b',ja:'思考も、感情も、そのもうひとりのあなたへ、ゆっくりと、移っていきます。',en:'Your thoughts and feelings slowly move into that other you.'}
+   {at:57,id:'s02a',ja:'いま、あなたの首元から、半透明なもう一人のあなたがあらわれました',en:'Just now, from the base of your neck, a translucent other you has appeared.'},
+   {at:64,id:'s02b',ja:'このとき、本体のあなたの「考え」や「気持ち」も、もう一人のあなたに移っていきます',en:'And with it, the thoughts and feelings of your body move into that other you.'}
  ]},
  {s:70,e:88,label:{ja:'Scene 03 — 離れる',en:'Scene 03 — Drift'},lines:[
-   {at:71,id:'s03a',ja:'あなたと身体は、透明な、細い糸でつながっています。決して切れません。だから、安心して離れて大丈夫です。',en:'You and your body are joined by a fine, transparent thread. It never breaks. So you can drift away with ease.'},
-   {at:82,id:'s03b',ja:'見る位置が、自由になります。上も、下も、ありません。あなたは、自分の意志で、どこへでも動けます。',en:'Your point of view becomes free. There is no up, no down. By your own will, you can move anywhere.'}
+   {at:71,id:'s03a',ja:'足元に目を向けてください。細いゴムが結ばれていて、本体のあなたの首元と繋がっています',en:'Look down at your feet. A thin elastic cord is tied there, joined to the neck of your body.'},
+   {at:77,id:'s03a2',ja:'自在に伸び縮みするこのゴムは、決して切れないので安心してください',en:'It stretches freely, and it never breaks — so you are safe.'},
+   {at:82,id:'s03b',ja:'ここは、上下や水平、垂直の感覚のない360度の空間です。自分の意思で、どこへでも自由に移動することができます',en:'This is a place with no up or down, no horizontal or vertical — a full 360 degrees. By your own will, you can move anywhere.'}
  ]},
  {s:88,e:150,label:{ja:'Scene 04 — 俯瞰',en:'Scene 04 — Behold'},lines:[
-   {at:89,id:'s04a',ja:'好きな角度から、好きな距離で、座っているあなた自身を、眺めてみましょう。',en:'From any angle, at any distance, look upon yourself sitting there.'},
-   {at:100,id:'s04b',ja:'遠くからでも、すぐ近くからでも。上から、下から、ぐるりと。',en:'From far away, or up close. From above, from below, all the way around.'},
-   {at:110,id:'s04q1',q:true,ja:'そこに座っているあなたは——今、何を考えていますか？',en:'The you sitting there — what are you thinking, right now?'},
-   {at:121,id:'s04q2',q:true,ja:'今、どんな感情を、持っていますか？',en:'And what feeling are you holding, right now?'},
-   {at:132,id:'s04q3',q:true,ja:'あなたの願いも、そこに移っています。……ここから見ると、その願いは、同じ重さですか？',en:'Your wishes are there too. … Seen from here, do they still carry the same weight?'},
-   {at:142,id:'s04c',ja:'ただ、気づくだけで大丈夫です。変えようとしなくて、いいのです。',en:'Simply notice. There is no need to change anything.'}
+   {at:89,id:'s04a',ja:'さぁ、好きな角度から、好きな距離で、座っているあなた自身を眺めてみましょう',en:'Now — from any angle, at any distance, look upon yourself sitting there.'},
+   {at:100,id:'s04b',ja:'頭のてっぺんから足裏まで、ふだんなら自分の目で見ることのできない角度です',en:'From the top of your head to the soles of your feet — angles your own eyes can never see.'},
+   {at:110,id:'s04q1',q:true,ja:'さて、座っているあなたは、いま、何を考えているでしょう？',en:'So — the you sitting there: what are they thinking, right now?'},
+   {at:121,id:'s04q2',q:true,ja:'いま、どんな気持ちでいるでしょう？',en:'And how are they feeling, right now?'},
+   {at:130,id:'s04q3',q:true,ja:'そして、筋肉の張り具合は？　張っているでしょうか？　ゆるんでいるでしょうか？',en:'And the muscles — are they tense? Or are they at ease?'},
+   {at:140,id:'s04c',ja:'ただ気づくだけで、変えようとする必要はありません',en:'Simply notice. There is no need to change anything.'},
+   {at:144.5,id:'s04c2',ja:'考えや気持ちは、浮かんでは流れて消えていきます',en:'Thoughts and feelings rise, drift, and dissolve.'},
+   {at:148,id:'s04c3',ja:'さようなら',en:'Farewell.'}
  ]},
  {s:150,e:168,label:{ja:'Scene 05 — 戻る',en:'Scene 05 — Return'},lines:[
-   {at:151,id:'s05a',ja:'それでは、ゆっくりと、首元から自分の身体へ、戻っていきましょう。',en:'Now, slowly, return through your neck, back into your body.'},
-   {at:160,id:'s05b',ja:'離れていたあなたが、静かに、自分の身体へ帰ってきます。',en:'The you that drifted away comes quietly home.'}
+   {at:151,id:'s05a',ja:'それでは、ゆっくりと本体のあなたの体へ戻っていきましょう',en:'Now, slowly, let us return to your body.'},
+   {at:160,id:'s05b',ja:'離れていたあなたが静かに自分の体へ帰ってきます',en:'The you that drifted away comes quietly home.'}
  ]},
  {s:168,e:180,label:{ja:'Scene 06 — 着地',en:'Scene 06 — Land'},lines:[
-   {at:169,id:'s06a',ja:'ノイズが、消えていきます。静かに、整いました。',en:'The noise fades away. Quietly, you are retuned.'},
-   {at:176,id:'s06b',ja:'あなたのペースで、目を開けてください。',en:'In your own time, gently open your eyes.'}
+   {at:169,id:'s06a',ja:'ノイズが鎮まり、ふだんのあなた自身に戻りました',en:'The noise has settled. You are your everyday self again.'},
+   {at:175,id:'s06b',ja:'あなたのペースで目を開けてください',en:'In your own time, gently open your eyes.'}
  ]}
 ];
 function lineText(l){return l[LANG]||l.ja;}
@@ -775,6 +832,8 @@ var CAM_KEYS=[
   {t:0,   az:0,   el:2,  r:5.2, ty:0.00, roll:0},   // 0:00  sit quietly, near eye-level in front (breath-ring aligns)
   {t:56,  az:5,   el:3,  r:5.1, ty:0.00, roll:0},   // 0:56  breathing (3×17s +1s lead-in) — the faintest drift only
   {t:70,  az:46,  el:13, r:5.5, ty:0.08, roll:2},   // 1:10  the viewpoint lifts away from the neck
+  {t:73,  az:57,  el:14, r:5.55,ty:-0.50,roll:3},   // 1:13  「足元に目を向けて」— gaze dips to our feet & the cord
+  {t:80,  az:83,  el:17, r:5.67,ty:0.09, roll:4},   // 1:20  gaze lifts back as the cord line lands
   {t:88,  az:112, el:21, r:5.8, ty:0.10, roll:5},   // 1:28  slow horizontal orbit — the side
   {t:103, az:180, el:-16,r:5.6, ty:0.06, roll:9},   // 1:43  from BELOW, looking up (仰視 — 絵コンテS4の下から視点)
   {t:118, az:250, el:14, r:6.0, ty:0.12, roll:12},  // 1:58  rising past the side-back
@@ -994,6 +1053,17 @@ function applyLang(){
   document.getElementById('ldoc').innerHTML=LEGAL[LANG];
   document.getElementById('endMsg').textContent=u.end;
   document.getElementById('againBtn').textContent=u.again;
+  document.getElementById('journalBtn').textContent=u.jGo;
+  document.getElementById('skipBtn').textContent=u.jSkip;
+  document.getElementById('jHead').textContent=u.jHead;
+  document.getElementById('jHead2').textContent=u.jHist;
+  document.getElementById('jl1').textContent=u.jq1;
+  document.getElementById('jl2').textContent=u.jq2;
+  document.getElementById('jl3').textContent=u.jq3;
+  document.getElementById('jHint').textContent=SR_OK?u.jHintMic:u.jHintNoMic;
+  document.getElementById('jSave').textContent=u.jSave;
+  document.getElementById('jHist').textContent=u.jHist;
+  document.getElementById('jBack').textContent=u.jBack;
   document.getElementById('bp').textContent=u.pause;
   document.getElementById('br').textContent=u.exit;
   document.documentElement.lang=LANG;
@@ -1064,7 +1134,8 @@ function finishExperience(){
   document.getElementById('hud').style.opacity='0';
   document.getElementById('ctrl').style.display='none';
   ringBell();
-  setTimeout(function(){ document.getElementById('end').classList.remove('hidden'); },1600);
+  // ~3s of stillness after「目を開けてください」(user 2026-07-04) before the choice appears
+  setTimeout(function(){ document.getElementById('end').classList.remove('hidden'); },2600);
 }
 
 // controls
@@ -1077,6 +1148,65 @@ document.getElementById('br').addEventListener('click',function(){ location.relo
 document.getElementById('againBtn').addEventListener('click',function(){
   document.getElementById('end').classList.add('hidden'); beginPlay();
 });
+
+// ── JOURNALING (2026-07-04, user) ────────────────
+// After the session: observe what the body-self was thinking / feeling, and how the
+// translucent you felt watching it. Voice→text via Web Speech API (falls back to typing).
+// Entries live ONLY in localStorage (matches the legal text: nothing leaves the device).
+var SR=window.SpeechRecognition||window.webkitSpeechRecognition, SR_OK=!!SR;
+var srCur=null, srBtn=null;
+function srStop(){ try{ if(srCur) srCur.stop(); }catch(e){} srCur=null; if(srBtn){srBtn.classList.remove('rec');srBtn=null;} }
+function srToggle(btn,ta){
+  if(srBtn===btn){ srStop(); return; }
+  srStop();
+  if(!SR_OK) return;
+  try{
+    var r=new SR(); r.lang=(LANG==='ja'?'ja-JP':'en-US'); r.continuous=true; r.interimResults=false;
+    r.onresult=function(ev){ for(var i=ev.resultIndex;i<ev.results.length;i++){ if(ev.results[i].isFinal){
+      ta.value=(ta.value?ta.value+' ':'')+ev.results[i][0].transcript.trim(); } } };
+    r.onend=function(){ if(srCur===r){ srCur=null; if(srBtn){srBtn.classList.remove('rec');srBtn=null;} } };
+    r.onerror=function(){ srStop(); };
+    r.start(); srCur=r; srBtn=btn; btn.classList.add('rec');
+  }catch(e){ srStop(); }
+}
+[['jm1','jt1'],['jm2','jt2'],['jm3','jt3']].forEach(function(p){
+  var b=document.getElementById(p[0]), t=document.getElementById(p[1]);
+  if(!SR_OK){ b.style.display='none'; return; }
+  b.addEventListener('click',function(){ srToggle(b,t); });
+});
+function jShow(id){ ['end','journal','journalLog','title'].forEach(function(s){
+  var el=document.getElementById(s); el.classList.toggle('hidden',s!==id);
+  if(s==='title'&&s===id) el.classList.remove('fade-out'); }); srStop(); }
+function jLoad(){ try{ return JSON.parse(localStorage.getItem('retune_journal')||'[]'); }catch(e){ return []; } }
+function jRenderLog(){
+  var u=UI[LANG], list=jLoad(), el=document.getElementById('jList');
+  if(!list.length){ el.innerHTML='<div class="jent"><div class="jrow2">'+u.jEmpty+'</div></div>'; return; }
+  el.innerHTML=list.slice().reverse().map(function(en){
+    var d=new Date(en.d), ds=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)
+      +' '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
+    function esc(s){ return (s||'').replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];}); }
+    var rows='';
+    [['1',en.q1],['2',en.q2],['3',en.q3]].forEach(function(q){ if(q[1]) rows+='<div class="jrow2"><span class="jk">Q'+q[0]+'</span> '+esc(q[1])+'</div>'; });
+    return '<div class="jent"><div class="jdate">'+ds+'</div>'+rows+'</div>';
+  }).join('');
+}
+document.getElementById('journalBtn').addEventListener('click',function(){
+  ['jt1','jt2','jt3'].forEach(function(id){ document.getElementById(id).value=''; });
+  jShow('journal');
+});
+document.getElementById('skipBtn').addEventListener('click',function(){ jShow('title'); });
+document.getElementById('jSave').addEventListener('click',function(){
+  srStop();
+  var e={ d:new Date().toISOString(),
+    q1:document.getElementById('jt1').value.trim(),
+    q2:document.getElementById('jt2').value.trim(),
+    q3:document.getElementById('jt3').value.trim() };
+  if(e.q1||e.q2||e.q3){ var l=jLoad(); l.push(e); try{ localStorage.setItem('retune_journal',JSON.stringify(l)); }catch(err){} }
+  this.textContent=UI[LANG].jSaved;
+  var self=this; setTimeout(function(){ self.textContent=UI[LANG].jSave; jRenderLog(); jShow('journalLog'); },500);
+});
+document.getElementById('jHist').addEventListener('click',function(){ jRenderLog(); jShow('journalLog'); });
+document.getElementById('jBack').addEventListener('click',function(){ jShow('title'); });
 
 window.addEventListener('resize',function(){ var w=document.getElementById('wrap');
   W3=w.clientWidth;H3=w.clientHeight; renderer.setSize(W3,H3); cam.aspect=W3/H3; cam.updateProjectionMatrix(); });
