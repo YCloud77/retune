@@ -1,6 +1,6 @@
 // RETUNE service worker — makes the installed app launch instantly and work OFFLINE.
 // Bump CACHE when any asset changes so returning users pull the new version.
-var CACHE = 'retune-v5-7';
+var CACHE = 'retune-v5-8';
 var CORE = [
   './',
   './index.html',
@@ -13,8 +13,8 @@ var CORE = [
   './breathing_bg.png'
 ];
 // Narration lines (both languages) — small mp3s, precache so audio never waits.
-var IDS = ['s01a','s01a2','s01b','s01c','s01d','s01e','s01f','s01g','s01h','s01i','s01j',
-  's02a','s02b','s03a','s03a2','s03b','s04a','s04b','s04q1','s04q2','s04q3','s04c','s04c2',
+var IDS = ['s01a','s01a2','s01b',
+  's02a','s02b','s03a','s03a2','s03b','s04a','s04q1','s04q2','s04q3','s04c2',
   's05a','s05b','s06a','s06b'];
 ['ja','en'].forEach(function(lg){ IDS.forEach(function(id){ CORE.push('./audio/'+lg+'/'+id+'.mp3'); }); });
 
