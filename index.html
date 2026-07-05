@@ -1271,6 +1271,17 @@ requestAnimationFrame(animate);
 
 // Register the service worker so RETUNE installs as a home-screen app and runs offline.
 if('serviceWorker' in navigator){
+  // Was this page already controlled by a SW when it loaded? If so, a later
+  // controllerchange means an UPDATE just took over — reload once so the new text/
+  // audio/animation appear without the user manually reloading twice. First-ever
+  // visit (no prior controller) is skipped so we don't reload on the initial install.
+  var _hadSW = !!navigator.serviceWorker.controller;
+  var _swReloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange',function(){
+    if(_swReloaded || !_hadSW) return;
+    _swReloaded = true;
+    window.location.reload();
+  });
   window.addEventListener('load',function(){
     navigator.serviceWorker.register('sw.js').catch(function(){});
   });
