@@ -251,7 +251,7 @@ var SCENES=[
  {s:0,e:66,label:{ja:'Scene 01 — 深呼吸',en:'Scene 01 — Breathe'},lines:[
    {at:0.8,id:'s01a',ja:'これから3分間のリチューニングを始めますので、楽な姿勢で腰掛けます',en:'We will now begin three minutes of retuning. Settle into a comfortable seat.'},
    {at:8,id:'s01a2',ja:'画面の中に座っているのは、あなた自身です',en:'The one sitting on the screen is you.'},
-   {at:14.2,id:'s01b',ja:'最初に、深呼吸を3回いたしましょう',en:'First, let’s take three deep breaths together.'}
+   {at:{ja:13.0,en:11.2},id:'s01b',ja:'最初に、深呼吸を3回いたしましょう',en:'First, let’s take three deep breaths together.'}
  ]},
  {s:66,e:81,label:{ja:'Scene 02 — 移る',en:'Scene 02 — Shift'},lines:[
    {at:66.6,id:'s02a',ja:'いま、あなたの首元から、半透明なもう一人のあなたがあらわれました',en:'Just now, from the base of your neck, a translucent other you has appeared.'},
@@ -967,6 +967,11 @@ function track(ev,extra){
 }
 window.addEventListener('pagehide',function(){ if(started&&!ended) track('exit_page'); });
 
+// A line's trigger time may be a number, or a per-language map {ja:.., en:..}.
+// (Needed because the same line's audio has a different length per language, so the
+//  gap to the NEXT line must be tuned separately to keep the intended silence — e.g.
+//  the 1.5s pause after s01a2 "…あなた自身です".)
+function atOf(l){ var a=l.at; return (a&&typeof a==='object')?(a[LANG]!=null?a[LANG]:a.ja):a; }
 var lastSceneIdx=-1;
 function updateHUD(e){
   document.getElementById('pf').style.width=(e/TOTAL*100)+'%';
@@ -976,7 +981,7 @@ function updateHUD(e){
   for(var i=0;i<SCENES.length;i++){ var sc=SCENES[i];
     if(e>=sc.s&&e<sc.e){ document.getElementById('sl').textContent=sc.label[LANG]||sc.label.ja;
       if(i!==lastSceneIdx){ lastSceneIdx=i; track('scene','s0'+(i+1)); }
-      for(var j=0;j<sc.lines.length;j++) if(e>=sc.lines[j].at) cur=sc.lines[j]; break; } }
+      for(var j=0;j<sc.lines.length;j++) if(e>=atOf(sc.lines[j])) cur=sc.lines[j]; break; } }
   showLine(cur);
 }
 
