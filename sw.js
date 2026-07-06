@@ -1,6 +1,6 @@
 // RETUNE service worker — makes the installed app launch instantly and work OFFLINE.
 // Bump CACHE when any asset changes so returning users pull the new version.
-var CACHE = 'retune-v5-21';
+var CACHE = 'retune-v5-22';
 var CORE = [
   './',
   './index.html',
@@ -16,7 +16,7 @@ var CORE = [
 var IDS = ['s01a','s01a2','s01b',
   's02a','s02b','s03a','s03a2','s03b','s04a','s04q1','s04q2','s04q3','s04c2',
   's05a','s05b','s06a','s06b'];
-['ja','en'].forEach(function(lg){ IDS.forEach(function(id){ CORE.push('./audio/'+lg+'/'+id+'.mp3'); }); });
+['ja','en','zh'].forEach(function(lg){ IDS.forEach(function(id){ CORE.push('./audio/'+lg+'/'+id+'.mp3'); }); });
 
 self.addEventListener('install', function(e){
   self.skipWaiting();
