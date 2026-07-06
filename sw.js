@@ -1,6 +1,6 @@
 // RETUNE service worker — makes the installed app launch instantly and work OFFLINE.
 // Bump CACHE when any asset changes so returning users pull the new version.
-var CACHE = 'retune-v5-12';
+var CACHE = 'retune-v5-13';
 var CORE = [
   './',
   './index.html',
@@ -32,13 +32,28 @@ self.addEventListener('activate', function(e){
   }).then(function(){ return self.clients.claim(); }));
 });
 
-// Cache-first for same-origin assets (offline + instant). Network passthrough for the rest
-// (CDN three.js, the analytics endpoint — those must hit the network).
+// Strategy:
+//   HTML (the page itself) = NETWORK-FIRST  → always show the freshest version when online,
+//     fall back to cache only when offline. This ends the "stale index.html / old subtitles"
+//     problem: updates appear immediately without needing a manual double-reload.
+//   Everything else (glb, audio, bgm, icons — versioned/immutable) = CACHE-FIRST → instant + offline.
+//   Cross-origin (CDN three.js, analytics) = network passthrough.
 self.addEventListener('fetch', function(e){
   var req = e.request;
   if(req.method !== 'GET'){ return; }
   var url = new URL(req.url);
   if(url.origin !== self.location.origin){ return; }   // let CDN & analytics go to network
+  var isHTML = req.mode === 'navigate' || url.pathname === '/' || url.pathname.endsWith('/') || url.pathname.endsWith('.html');
+  if(isHTML){
+    e.respondWith(
+      fetch(req).then(function(res){
+        if(res && res.status === 200){ var copy = res.clone();
+          caches.open(CACHE).then(function(c){ c.put(req, copy); }); }
+        return res;
+      }).catch(function(){ return caches.match(req).then(function(h){ return h || caches.match('./index.html'); }); })
+    );
+    return;
+  }
   e.respondWith(
     caches.match(req).then(function(hit){
       if(hit) return hit;
