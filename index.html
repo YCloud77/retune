@@ -128,7 +128,7 @@ canvas{display:block;width:100%!important;height:100%!important;position:absolut
   <!-- Pre-0 Title -->
   <div id="title" class="screen">
     <div class="langs"><select id="langSel" class="langSel" aria-label="Language">
-      <option value="ja">日本語</option><option value="en">English</option><option value="zh">中文</option>
+      <option value="ja">日本語</option><option value="en">English</option><option value="zh">中文</option><option value="ko">한국어</option>
     </select></div>
     <h1>RETUNE</h1>
     <div class="hint" id="titleHint">tap to begin</div>
@@ -191,7 +191,7 @@ canvas{display:block;width:100%!important;height:100%!important;position:absolut
 var TOTAL=188;
 
 // ── i18n ────────────────────────────────────────
-var LANG=(function(){var l=(navigator.language||'ja').toLowerCase(); if(l.indexOf('ja')===0)return 'ja'; if(l.indexOf('zh')===0)return 'zh'; return 'en';})();
+var LANG=(function(){var l=(navigator.language||'ja').toLowerCase(); if(l.indexOf('ja')===0)return 'ja'; if(l.indexOf('zh')===0)return 'zh'; if(l.indexOf('ko')===0)return 'ko'; return 'en';})();
 
 // To use pre-recorded narration, drop files at audio/<lang>/<id>.mp3 and set AUDIO_BASE='audio'.
 // While null, the app falls back to Web Speech API (dev only — final product should use neural TTS files).
@@ -242,7 +242,22 @@ var UI={
     jq3:'看着这一切，半透明的你有什么感受？',
     jHintMic:'🎤 点击按钮开始语音输入（说完后再按一次）',
     jHintNoMic:'此设备不支持语音输入，请用文字输入',
-    jSave:'保存', jSaved:'已保存', jHist:'过往记录', jBack:'返回', jEmpty:'还没有记录' }
+    jSave:'保存', jSaved:'已保存', jHist:'过往记录', jBack:'返回', jEmpty:'还没有记录' },
+  ko:{ titleHint:'화면을 터치해 시작', legalH:'시작하기 전에',
+    agree:'위의 이용약관 및 면책사항에 동의합니다',
+    scrollHint:'↓ 끝까지 스크롤하여 읽어 주세요',
+    scrollDone:'읽어 주셔서 감사합니다',
+    start:'시작하기',
+    safety:'⚠ 운전 중, 보행 중, 기계 조작 중 등 주의가 필요한 상황에서는 절대 사용하지 마세요. 안전하고 편안하게 앉을 수 있는 곳에서 사용해 주세요.',
+    end:'여기까지입니다.\n조용히, 리튜닝되었습니다.', again:'한 번 더', pause:'⏸', resume:'▶', exit:'✕',
+    jGo:'저널링 계속하기', jSkip:'오늘은 여기까지',
+    jHead:'저널링',
+    jq1:'「본체인 당신」은 무슨 생각을 하고 있었나요?',
+    jq2:'「본체인 당신」은 어떤 기분이었나요?',
+    jq3:'그 모습을 보며, 반투명한 당신은 어떻게 느꼈나요?',
+    jHintMic:'🎤 버튼을 눌러 음성으로 입력할 수 있습니다 (말이 끝나면 다시 누르세요)',
+    jHintNoMic:'이 기기에서는 음성 입력을 사용할 수 없습니다. 텍스트로 입력해 주세요',
+    jSave:'저장', jSaved:'저장되었습니다', jHist:'지난 기록', jBack:'돌아가기', jEmpty:'아직 기록이 없습니다' }
 };
 
 var LEGAL={
@@ -266,39 +281,46 @@ var LEGAL={
 <h3>4. 关于光与声音</h3>画面包含光效，声音包含旁白与钟声。对光或声音敏感、或有癫痫病史者请注意。请事先将音量调整到合适大小。
 <h3>5. 隐私</h3>本应用不收集姓名、联系方式等个人信息。您在日志中写下的内容与语音不会被发送，仅保存在您的设备中。为改善体验，我们可能只发送无法识别个人身份的匿名使用情况（会话的开始、完成、中断的时间点、所到达的场景、是否使用了日志功能）。
 <h3>6. 自负其责</h3>本应用的使用由用户自行判断并承担责任。对于因使用产生的任何损害，提供方概不负责。
-<div class="end">— 完 —</div>`
+<div class="end">— 完 —</div>`,
+  ko:`<h3>1. 이 앱에 대하여</h3>RETUNE은 깊은 호흡과 이미지(시점의 전환)를 통해 몸과 마음을 가라앉히고 의식 상태를 전환하는 셀프케어/릴랙세이션 체험입니다.
+<h3>2. 의료·효과에 관한 면책</h3>이 앱은 의료 행위·진단·치료가 아닙니다. 질병의 치료나 예방을 목적으로 하지 않으며, 의사 등 전문가의 조언을 대체하지 않습니다. 심신에 이상이 있는 분, 통원·복약 중인 분, 임신 중인 분은 사용 전에 전문가와 상담해 주세요.
+<h3>3. <span class="warn">안전에 관한 중요 주의</span></h3><span class="warn">운전 중, 자전거·차량 조작 중, 보행 중, 기계나 화기 취급 중 등 주의가 필요한 어떤 상황에서도 절대 이 앱을 사용하지 마세요.</span>이 앱은 주의를 내면으로 향하게 하고 시각 이미지에 집중하게 하므로 주변에 대한 주의력이 크게 떨어집니다. 반드시 안전하고, 앉거나 누울 수 있는 조용한 곳에서 사용해 주세요. 몸이 불편해지면 즉시 중단해 주세요.
+<h3>4. 빛과 소리에 대하여</h3>화면에는 빛 연출이, 소리에는 내레이션과 종소리가 포함됩니다. 빛이나 소리에 민감한 분, 뇌전증 병력이 있는 분은 주의해 주세요. 음량은 미리 적절하게 조절해 주세요.
+<h3>5. 개인정보</h3>이 앱은 이름·연락처 등 개인정보를 수집하지 않습니다. 저널링에 쓴 내용과 음성은 전송되지 않으며 사용자의 기기에만 저장됩니다. 체험 개선을 위해 개인을 특정할 수 없는 익명 사용 현황(세션의 시작·완료·중단 시점, 도달한 장면, 저널링 기능 사용 여부)만 전송될 수 있습니다.
+<h3>6. 자기 책임</h3>이 앱의 사용은 사용자 본인의 판단과 책임하에 이루어집니다. 사용으로 인해 발생한 어떠한 손해에 대해서도 제공자는 책임을 지지 않습니다.
+<div class="end">— 끝 —</div>`
 };
 
 // ── scenes & narration (id = future audio file name) ──
 var SCENES=[
- {s:0,e:66,label:{ja:'Scene 01 — 深呼吸',en:'Scene 01 — Breathe',zh:'Scene 01 — 深呼吸'},lines:[
-   {at:0.5,id:'s01a',ja:'これから3分間のリチューニングを始めます\n楽な姿勢で腰掛けてください',en:'Let’s begin your three minutes of retuning.\nFind a comfortable seat, and settle in.',zh:'让我们开始这三分钟的重新调频\n请找一个舒服的姿势，坐下来'},
-   {at:8,id:'s01a2',ja:'画面の中に座っているのは、「あなた自身」です',en:'The figure sitting on the screen — that’s you.',zh:'屏幕里坐着的那个人，就是「你自己」'},
-   {at:{ja:12.85,en:14.07,zh:12.38},id:'s01b',ja:'最初に、深呼吸を3回いたしましょう',en:'First, let’s take three slow, deep breaths.',zh:'首先，请慢慢地，做三次深呼吸'}
+ {s:0,e:66,label:{ja:'Scene 01 — 深呼吸',en:'Scene 01 — Breathe',zh:'Scene 01 — 深呼吸',ko:'Scene 01 — 깊은 호흡'},lines:[
+   {at:0.5,id:'s01a',ja:'これから3分間のリチューニングを始めます\n楽な姿勢で腰掛けてください',en:'Let’s begin your three minutes of retuning.\nFind a comfortable seat, and settle in.',zh:'让我们开始这三分钟的重新调频\n请找一个舒服的姿势，坐下来',ko:'지금부터 3분간의 리튜닝을 시작합니다\n편안한 자세로 앉아 주세요'},
+   {at:8,id:'s01a2',ja:'画面の中に座っているのは、「あなた自身」です',en:'The figure sitting on the screen — that’s you.',zh:'屏幕里坐着的那个人，就是「你自己」',ko:'화면 속에 앉아 있는 것은, 바로 「당신 자신」입니다'},
+   {at:{ja:12.85,en:14.07,zh:12.38,ko:13.33},id:'s01b',ja:'最初に、深呼吸を3回いたしましょう',en:'First, let’s take three slow, deep breaths.',zh:'首先，请慢慢地，做三次深呼吸',ko:'먼저, 깊은 호흡을 세 번 해 보세요'}
  ]},
- {s:66,e:81,label:{ja:'Scene 02 — 移る',en:'Scene 02 — Shift',zh:'Scene 02 — 转移'},lines:[
-   {at:66.6,id:'s02a',ja:'いま、あなたの首元から、半透明なもう一人のあなたがあらわれました',en:'Now, from the base of your neck, another you appears — weightless and translucent.',zh:'现在，从你的后颈处，浮现出另一个你——轻盈而透明'},
-   {at:{ja:73.5,en:74.0},id:'s02b',ja:'座っているあなたの「考え」や「気持ち」も、\nもう一人のあなたに移っていきます',en:'Your thoughts and your feelings are drifting over —\ninto this new you.',zh:'你的想法和感受，正慢慢地——\n流入这个新的你'}
+ {s:66,e:81,label:{ja:'Scene 02 — 移る',en:'Scene 02 — Shift',zh:'Scene 02 — 转移',ko:'Scene 02 — 옮겨 가기'},lines:[
+   {at:66.6,id:'s02a',ja:'いま、あなたの首元から、半透明なもう一人のあなたがあらわれました',en:'Now, from the base of your neck, another you appears — weightless and translucent.',zh:'现在，从你的后颈处，浮现出另一个你——轻盈而透明',ko:'지금, 당신의 목덜미에서 반투명한 또 하나의 당신이 나타났습니다'},
+   {at:{ja:73.5,en:74.0},id:'s02b',ja:'座っているあなたの「考え」や「気持ち」も、\nもう一人のあなたに移っていきます',en:'Your thoughts and your feelings are drifting over —\ninto this new you.',zh:'你的想法和感受，正慢慢地——\n流入这个新的你',ko:'앉아 있는 당신의 「생각」과 「감정」도,\n또 하나의 당신에게 옮겨 갑니다'}
  ]},
- {s:81,e:107,label:{ja:'Scene 03 — 離れる',en:'Scene 03 — Drift',zh:'Scene 03 — 飘离'},lines:[
-   {at:81.5,id:'s03a',ja:'足首に目を向けてください\n本体のあなたの首元と半透明のゴムで繋がっています',en:'Look down at your ankle.\nA translucent cord connects it to the neck of the you sitting below.',zh:'请看向你的脚踝\n一条半透明的绳子，连接着下方坐着的你的后颈'},
-   {at:90,id:'s03a2',ja:'自在に伸び縮みするので、座っているあなたを見失うことはありません',en:'It stretches as far as you need — you’ll never lose sight of yourself.',zh:'它可以自由地伸缩——你不会看丢坐在那里的自己'},
-   {at:{ja:96.5,en:96.3},id:'s03b',ja:'ここは、水平と垂直の感覚のない360度空間です\n自分の意思で、どこへでも自由に移動できます',en:'Here, there is no up or down — only endless space, in every direction.\nYou can drift anywhere you wish.',zh:'这里没有上，也没有下——只有向每个方向无限延伸的空间\n你可以随着自己的意愿，飘向任何地方'}
+ {s:81,e:107,label:{ja:'Scene 03 — 離れる',en:'Scene 03 — Drift',zh:'Scene 03 — 飘离',ko:'Scene 03 — 멀어지기'},lines:[
+   {at:81.5,id:'s03a',ja:'足首に目を向けてください\n本体のあなたの首元と半透明のゴムで繋がっています',en:'Look down at your ankle.\nA translucent cord connects it to the neck of the you sitting below.',zh:'请看向你的脚踝\n一条半透明的绳子，连接着下方坐着的你的后颈',ko:'발목을 바라봐 주세요\n본체인 당신의 목덜미와, 반투명한 고무줄로 이어져 있습니다'},
+   {at:90,id:'s03a2',ja:'自在に伸び縮みするので、座っているあなたを見失うことはありません',en:'It stretches as far as you need — you’ll never lose sight of yourself.',zh:'它可以自由地伸缩——你不会看丢坐在那里的自己',ko:'자유롭게 늘어나고 줄어들기 때문에, 앉아 있는 당신을 잃어버릴 일은 없습니다'},
+   {at:{ja:96.5,en:96.3,ko:96.8},id:'s03b',ja:'ここは、水平と垂直の感覚のない360度空間です\n自分の意思で、どこへでも自由に移動できます',en:'Here, there is no up or down — only endless space, in every direction.\nYou can drift anywhere you wish.',zh:'这里没有上，也没有下——只有向每个方向无限延伸的空间\n你可以随着自己的意愿，飘向任何地方',ko:'이곳은 수평과 수직의 감각이 없는 360도 공간입니다\n당신의 의지로, 어디든 자유롭게 이동할 수 있습니다'}
  ]},
- {s:107,e:159,label:{ja:'Scene 04 — 俯瞰',en:'Scene 04 — Behold',zh:'Scene 04 — 俯瞰'},lines:[
-   {at:{ja:108.2,en:108.5,zh:108.5},id:'s04a',ja:'さぁ、座っているあなたを観察してみましょう\nふだんなら見ることのできない角度で\n遠くから近くから',en:'Now, take a look at yourself sitting there —\nfrom angles you never get to see.\nFrom far away… and up close.',zh:'现在，来观察坐在那里的自己——\n从平时无法看到的角度\n从远处……再到近处'},
-   {at:121,id:'s04q1',q:true,ja:'あなたは、いま、何を考えていますか？',en:'What’s on your mind right now?',zh:'你现在，在想什么？'},
-   {at:130,id:'s04q2',q:true,ja:'いま、どんな気持ちでいますか？',en:'How are you feeling, right now?',zh:'现在，是什么样的心情？'},
-   {at:138,id:'s04q3',q:true,ja:'そして、体の張りはどうでしょう？',en:'And your body — where are you holding tension?',zh:'还有你的身体——哪里还紧绷着？'},
-   {at:149,id:'s04c2',ja:'気づくだけで、変える必要はありません',en:'Just notice. No need to change.',zh:'只要察觉就好，不需要改变'}
+ {s:107,e:159,label:{ja:'Scene 04 — 俯瞰',en:'Scene 04 — Behold',zh:'Scene 04 — 俯瞰',ko:'Scene 04 — 바라보기'},lines:[
+   {at:{ja:108.2,en:108.5,zh:108.5},id:'s04a',ja:'さぁ、座っているあなたを観察してみましょう\nふだんなら見ることのできない角度で\n遠くから近くから',en:'Now, take a look at yourself sitting there —\nfrom angles you never get to see.\nFrom far away… and up close.',zh:'现在，来观察坐在那里的自己——\n从平时无法看到的角度\n从远处……再到近处',ko:'자, 앉아 있는 당신을 관찰해 볼까요\n평소에는 볼 수 없는 각도에서\n멀리서, 그리고 가까이서'},
+   {at:121,id:'s04q1',q:true,ja:'あなたは、いま、何を考えていますか？',en:'What’s on your mind right now?',zh:'你现在，在想什么？',ko:'당신은 지금, 무슨 생각을 하고 있나요?'},
+   {at:130,id:'s04q2',q:true,ja:'いま、どんな気持ちでいますか？',en:'How are you feeling, right now?',zh:'现在，是什么样的心情？',ko:'지금, 어떤 기분인가요?'},
+   {at:138,id:'s04q3',q:true,ja:'そして、体の張りはどうでしょう？',en:'And your body — where are you holding tension?',zh:'还有你的身体——哪里还紧绷着？',ko:'그리고, 몸의 긴장은 어떤가요?'},
+   {at:149,id:'s04c2',ja:'気づくだけで、変える必要はありません',en:'Just notice. No need to change.',zh:'只要察觉就好，不需要改变',ko:'알아차리는 것만으로 충분합니다. 바꾸려 하지 않아도 괜찮습니다'}
  ]},
- {s:159,e:177,label:{ja:'Scene 05 — 戻る',en:'Scene 05 — Return',zh:'Scene 05 — 回归'},lines:[
-   {at:159.6,id:'s05a',ja:'それでは、座っている体へ帰りましょう',en:'Now, let’s head back — to the body sitting there.',zh:'现在，让我们回去——回到坐在那里的身体'},
-   {at:168,id:'s05b',ja:'ゆっくりと静かに戻ります',en:'Gently, quietly, coming home.',zh:'轻轻地，静静地，回来'}
+ {s:159,e:177,label:{ja:'Scene 05 — 戻る',en:'Scene 05 — Return',zh:'Scene 05 — 回归',ko:'Scene 05 — 돌아가기'},lines:[
+   {at:159.6,id:'s05a',ja:'それでは、座っている体へ帰りましょう',en:'Now, let’s head back — to the body sitting there.',zh:'现在，让我们回去——回到坐在那里的身体',ko:'이제, 앉아 있는 몸으로 돌아가 볼까요'},
+   {at:168,id:'s05b',ja:'ゆっくりと静かに戻ります',en:'Gently, quietly, coming home.',zh:'轻轻地，静静地，回来',ko:'천천히, 조용히 돌아갑니다'}
  ]},
- {s:177,e:188,label:{ja:'Scene 06 — 着地',en:'Scene 06 — Land',zh:'Scene 06 — 落地'},lines:[
-   {at:{ja:177.5,en:177.0},id:'s06a',ja:'ノイズが鎮まり、\nふだんのあなた自身にリチューンされました',en:'The noise has settled.\nYou’re retuned — back to your everyday self.',zh:'噪音已经平息\n你已重新调频——回到了平常的自己'},
-   {at:{ja:184,en:183.7},id:'s06b',ja:'ゆっくりと目を開けてください',en:'Whenever you’re ready, slowly open your eyes.',zh:'当你准备好了，请慢慢睁开眼睛'}
+ {s:177,e:188,label:{ja:'Scene 06 — 着地',en:'Scene 06 — Land',zh:'Scene 06 — 落地',ko:'Scene 06 — 착지'},lines:[
+   {at:{ja:177.5,en:177.0},id:'s06a',ja:'ノイズが鎮まり、\nふだんのあなた自身にリチューンされました',en:'The noise has settled.\nYou’re retuned — back to your everyday self.',zh:'噪音已经平息\n你已重新调频——回到了平常的自己',ko:'노이즈가 가라앉고,\n평소의 당신 자신으로 리튜닝되었습니다'},
+   {at:{ja:184,en:183.7},id:'s06b',ja:'ゆっくりと目を開けてください',en:'Whenever you’re ready, slowly open your eyes.',zh:'当你准备好了，请慢慢睁开眼睛',ko:'천천히 눈을 떠 주세요'}
  ]}
 ];
 function lineText(l){return l[LANG]||l.ja;}
@@ -369,7 +391,7 @@ function preloadNarration(){
   if(!AUDIO_BASE) return;
   for(var i=0;i<SCENES.length;i++){ var ls=SCENES[i].lines;
     for(var j=0;j<ls.length;j++){ var l=ls[j]; if(!l.id) continue;
-      ['ja','en','zh'].forEach(function(lg){ var k=lg+'/'+l.id;
+      ['ja','en','zh','ko'].forEach(function(lg){ var k=lg+'/'+l.id;
         if(narCache[k]) return;
         try{ var a=new Audio(AUDIO_BASE+'/'+lg+'/'+l.id+'.mp3'); a.preload='auto';
           a.load(); narCache[k]=a; }catch(e){}
