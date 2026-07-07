@@ -307,7 +307,7 @@ var SCENES=[
    {at:{ja:73.5,en:74.0},id:'s02b',al:1,ja:'座っているあなたの「考え」や「気持ち」も、\nもう一人のあなたに移っていきます',en:'Your thoughts and your feelings are drifting over —\ninto this new you.',zh:'你的想法和感受，正慢慢地——\n流入这个新的你',ko:'앉아 있는 당신의 「생각」과 「감정」도,\n또 하나의 당신에게 옮겨 갑니다'}
  ]},
  {s:81,e:107,label:{ja:'Scene 03 — 離れる',en:'Scene 03 — Drift',zh:'Scene 03 — 飘离',ko:'Scene 03 — 멀어지기'},lines:[
-   {at:81.5,id:'s03a',ja:'足首に目を向けてください\n本体のあなたの首元と半透明のゴムで繋がっています',en:'Look down at your ankle.\nA translucent cord connects it to the neck of the you sitting below.',zh:'请看向你的脚踝\n一条半透明的绳子，连接着下方坐着的你的后颈',ko:'발목을 바라봐 주세요\n본체인 당신의 목덜미와, 반투명한 고무줄로 이어져 있습니다'},
+   {at:81.5,id:'s03a',al:1,ja:'足首に目を向けてください\n本体のあなたの首元と半透明のゴムで繋がっています',en:'Look down at your ankle.\nA translucent cord connects it to the neck of the you sitting below.',zh:'请看向你的脚踝\n一条半透明的绳子，连接着下方坐着的你的后颈',ko:'발목을 바라봐 주세요\n본체인 당신의 목덜미와, 반투명한 고무줄로 이어져 있습니다'},
    {at:90,id:'s03a2',al:1,ja:'自在に伸び縮みするので、\n座っているあなたを見失うことはありません',en:'It stretches as far as you need — you’ll never lose sight of yourself.',zh:'它可以自由地伸缩——你不会看丢坐在那里的自己',ko:'자유롭게 늘어나고 줄어들기 때문에, 앉아 있는 당신을 잃어버릴 일은 없습니다'},
    {at:{ja:96.5,en:96.3,ko:96.8},id:'s03b',ja:'ここは、水平と垂直の感覚のない360度空間です\n自分の意思で、どこへでも自由に移動できます',en:'Here, there is no up or down — only endless space, in every direction.\nYou can drift anywhere you wish.',zh:'这里没有上，也没有下——只有向每个方向无限延伸的空间\n你可以随着自己的意愿，飘向任何地方',ko:'이곳은 수평과 수직의 감각이 없는 360도 공간입니다\n당신의 의지로, 어디든 자유롭게 이동할 수 있습니다'}
  ]},
@@ -999,8 +999,15 @@ function showLine(l){
     narTxt.style.textAlign=(LANG==='ja'&&l.al)?'center':'left';
     narTxt.style.whiteSpace=(LANG==='ja')?'nowrap':'';
     narTxt.style.fontSize='';
+    // 実測の要点: inline-blockは親幅で頭打ち(shrink-to-fit)になり、WebKitは
+    // scrollWidthも当てにならない。ja時は width:max-content で「箱=内容そのもの」に
+    // してrect幅を測り、収まらなければフォントを比例縮小する(全ブラウザ共通で正確)。
+    narTxt.style.maxWidth=(LANG==='ja')?'none':'';
+    narTxt.style.width=(LANG==='ja')?'max-content':'';
     if(LANG==='ja'){ try{
-      var _mw=Math.min(400,window.innerWidth-48), _w=narTxt.scrollWidth;
+      // 上限は「字幕コンテナの実測幅」= 実際に表示に使える幅そのもの
+      var _mw=Math.min(400,narDiv.getBoundingClientRect().width||(window.innerWidth-48));
+      var _w=narTxt.getBoundingClientRect().width;
       if(_w>_mw){ var _fs=parseFloat(getComputedStyle(narTxt).fontSize);
         narTxt.style.fontSize=(_fs*_mw/_w*0.98)+'px'; }
     }catch(e){} }
@@ -1027,6 +1034,18 @@ function track(ev,extra){
   }catch(e){}
 }
 window.addEventListener('pagehide',function(){ if(started&&!ended) track('exit_page'); });
+// 画面回転/リサイズ時: 表示中のja字幕をその場で再フィット(音声はそのまま)
+window.addEventListener('resize',function(){
+  try{
+    if(LANG!=='ja'||!lastLine) return;
+    var nt=document.getElementById('nt');
+    nt.style.fontSize='';
+    var mw=Math.min(400,document.getElementById('nar').getBoundingClientRect().width||(window.innerWidth-48));
+    var w=nt.getBoundingClientRect().width;
+    if(w>mw){ var fs=parseFloat(getComputedStyle(nt).fontSize);
+      nt.style.fontSize=(fs*mw/w*0.98)+'px'; }
+  }catch(e){}
+});
 
 // A line's trigger time may be a number, or a per-language map {ja:.., en:..}.
 // (Needed because the same line's audio has a different length per language, so the
