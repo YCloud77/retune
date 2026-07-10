@@ -109,6 +109,7 @@ canvas{display:block;width:100%!important;height:100%!important;position:absolut
 .ghostBtn:active{background:rgba(154,154,200,0.12)}
 .jhead{font-size:15px;letter-spacing:0.3em;color:#d8d8f5;font-weight:300;margin-bottom:22px}
 .jq{width:min(340px,84vw);margin-bottom:16px;text-align:left}
+#journal{justify-content:flex-start;overflow-y:auto;padding:max(24px,calc(50vh - 340px)) 0 24px;-webkit-overflow-scrolling:touch}
 .jlabel{font-size:12.5px;letter-spacing:0.08em;color:#b9b9e2;line-height:1.7;margin-bottom:6px}
 .jrow{display:flex;gap:8px;align-items:stretch}
 .jrow textarea{flex:1;background:rgba(20,20,44,0.7);border:1px solid rgba(154,154,200,0.3);border-radius:10px;
@@ -167,6 +168,7 @@ canvas{display:block;width:100%!important;height:100%!important;position:absolut
     <div class="jq"><div class="jlabel" id="jl1"></div><div class="jrow"><textarea id="jt1" rows="2"></textarea><button class="mic" id="jm1">🎤</button></div></div>
     <div class="jq"><div class="jlabel" id="jl2"></div><div class="jrow"><textarea id="jt2" rows="2"></textarea><button class="mic" id="jm2">🎤</button></div></div>
     <div class="jq"><div class="jlabel" id="jl3"></div><div class="jrow"><textarea id="jt3" rows="2"></textarea><button class="mic" id="jm3">🎤</button></div></div>
+    <div class="jq"><div class="jlabel" id="jl4"></div><div class="jrow"><textarea id="jt4" rows="2"></textarea><button class="mic" id="jm4">🎤</button></div></div>
     <div class="jhint" id="jHint"></div>
     <button class="primary" id="jSave"></button>
     <button class="ghostBtn" id="jHist"></button>
@@ -216,7 +218,8 @@ var UI={
     jHead:'ジャーナリング',
     jq1:'「本体のあなた」は、何を考えていましたか？',
     jq2:'「本体のあなた」は、どんな気持ちでいましたか？',
-    jq3:'それを見て、半透明のあなた自身は、どう感じましたか？',
+    jq3:'本体のあなたの「身体の張り」はどうでしたか？緊張している箇所はありますか？',
+    jq4:'それを見て、半透明のあなた自身は、どう感じましたか？',
     jHintMic:'🎤 ボタンで音声入力ができます（話し終わったらもう一度押す）',
     jHintNoMic:'この端末では音声入力が使えないため、文字で入力してください',
     jSave:'保存する', jSaved:'保存しました', jHist:'これまでの記録', jBack:'もどる', jEmpty:'まだ記録はありません' },
@@ -231,7 +234,8 @@ var UI={
     jHead:'JOURNALING',
     jq1:'What was your body-self thinking?',
     jq2:'How was your body-self feeling?',
-    jq3:'And watching that, how did the translucent you feel?',
+    jq3:'How was the tension in your body-self? Were any areas holding tight?',
+    jq4:'And watching that, how did the translucent you feel?',
     jHintMic:'🎤 tap to speak (tap again when done)',
     jHintNoMic:'Voice input is not available on this device — please type instead',
     jSave:'Save', jSaved:'Saved', jHist:'Past entries', jBack:'Back', jEmpty:'No entries yet' },
@@ -246,7 +250,8 @@ var UI={
     jHead:'日志',
     jq1:'「本体的你」当时在想什么？',
     jq2:'「本体的你」当时是什么心情？',
-    jq3:'看着这一切，半透明的你有什么感受？',
+    jq3:'「本体的你」的身体紧绷感如何？有没有哪里在紧张？',
+    jq4:'看着这一切，半透明的你有什么感受？',
     jHintMic:'🎤 点击按钮开始语音输入（说完后再按一次）',
     jHintNoMic:'此设备不支持语音输入，请用文字输入',
     jSave:'保存', jSaved:'已保存', jHist:'过往记录', jBack:'返回', jEmpty:'还没有记录' },
@@ -261,7 +266,8 @@ var UI={
     jHead:'저널링',
     jq1:'「본체인 당신」은 무슨 생각을 하고 있었나요?',
     jq2:'「본체인 당신」은 어떤 기분이었나요?',
-    jq3:'그 모습을 보며, 반투명한 당신은 어떻게 느꼈나요?',
+    jq3:'「본체인 당신」의 몸의 긴장은 어땠나요? 긴장하고 있던 곳이 있었나요?',
+    jq4:'그 모습을 보며, 반투명한 당신은 어떻게 느꼈나요?',
     jHintMic:'🎤 버튼을 눌러 음성으로 입력할 수 있습니다 (말이 끝나면 다시 누르세요)',
     jHintNoMic:'이 기기에서는 음성 입력을 사용할 수 없습니다. 텍스트로 입력해 주세요',
     jSave:'저장', jSaved:'저장되었습니다', jHist:'지난 기록', jBack:'돌아가기', jEmpty:'아직 기록이 없습니다' }
@@ -1214,6 +1220,7 @@ function applyLang(){
   document.getElementById('jl1').textContent=u.jq1;
   document.getElementById('jl2').textContent=u.jq2;
   document.getElementById('jl3').textContent=u.jq3;
+  document.getElementById('jl4').textContent=u.jq4;
   document.getElementById('jHint').textContent=SR_OK?u.jHintMic:u.jHintNoMic;
   document.getElementById('jSave').textContent=u.jSave;
   document.getElementById('jHist').textContent=u.jHist;
@@ -1334,7 +1341,7 @@ function srToggle(btn,ta){
     r.start(); srCur=r; srBtn=btn; btn.classList.add('rec');
   }catch(e){ srStop(); }
 }
-[['jm1','jt1'],['jm2','jt2'],['jm3','jt3']].forEach(function(p){
+[['jm1','jt1'],['jm2','jt2'],['jm3','jt3'],['jm4','jt4']].forEach(function(p){
   var b=document.getElementById(p[0]), t=document.getElementById(p[1]);
   if(!SR_OK){ b.style.display='none'; return; }
   b.addEventListener('click',function(){ srToggle(b,t); });
@@ -1351,12 +1358,12 @@ function jRenderLog(){
       +' '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
     function esc(s){ return (s||'').replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];}); }
     var rows='';
-    [['1',en.q1],['2',en.q2],['3',en.q3]].forEach(function(q){ if(q[1]) rows+='<div class="jrow2"><span class="jk">Q'+q[0]+'</span> '+esc(q[1])+'</div>'; });
+    [['1',en.q1],['2',en.q2],['3',en.q3],['4',en.q4]].forEach(function(q){ if(q[1]) rows+='<div class="jrow2"><span class="jk">Q'+q[0]+'</span> '+esc(q[1])+'</div>'; });
     return '<div class="jent"><div class="jdate">'+ds+'</div>'+rows+'</div>';
   }).join('');
 }
 document.getElementById('journalBtn').addEventListener('click',function(){
-  ['jt1','jt2','jt3'].forEach(function(id){ document.getElementById(id).value=''; });
+  ['jt1','jt2','jt3','jt4'].forEach(function(id){ document.getElementById(id).value=''; });
   track('journal_go'); jShow('journal');
 });
 document.getElementById('skipBtn').addEventListener('click',function(){ track('journal_skip'); jShow('title'); });
@@ -1365,10 +1372,11 @@ document.getElementById('jSave').addEventListener('click',function(){
   var e={ d:new Date().toISOString(),
     q1:document.getElementById('jt1').value.trim(),
     q2:document.getElementById('jt2').value.trim(),
-    q3:document.getElementById('jt3').value.trim() };
-  if(e.q1||e.q2||e.q3){ var l=jLoad(); l.push(e); try{ localStorage.setItem('retune_journal',JSON.stringify(l)); }catch(err){}
+    q3:document.getElementById('jt3').value.trim(),
+    q4:document.getElementById('jt4').value.trim() };
+  if(e.q1||e.q2||e.q3||e.q4){ var l=jLoad(); l.push(e); try{ localStorage.setItem('retune_journal',JSON.stringify(l)); }catch(err){}
     // analytics: only WHICH questions were answered (e.g. "110") — never the content
-    track('journal_saved',(e.q1?'1':'0')+(e.q2?'1':'0')+(e.q3?'1':'0')); }
+    track('journal_saved',(e.q1?'1':'0')+(e.q2?'1':'0')+(e.q3?'1':'0')+(e.q4?'1':'0')); }
   this.textContent=UI[LANG].jSaved;
   var self=this; setTimeout(function(){ self.textContent=UI[LANG].jSave; jRenderLog(); jShow('journalLog'); },500);
 });
