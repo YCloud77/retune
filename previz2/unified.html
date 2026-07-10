@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>RETUNE — 実3D統一版（案1）フルサンプル</title>
+<style>
+  body{margin:0;background:#0a0a14;color:#e8e8f0;font-family:-apple-system,'Hiragino Sans',sans-serif;padding:20px 14px 60px}
+  h1{font-size:17px;font-weight:600;margin:6px 0 4px}
+  .sub{font-size:12px;color:#9a9ab0;margin:0 0 16px;line-height:1.8}
+  video{width:100%;max-width:340px;border-radius:10px;display:block;background:#000}
+  .jump{margin:10px 0 24px}
+  .jump button{background:#22224a;color:#c8c8ff;border:none;border-radius:8px;padding:8px 12px;font-size:12px;margin-right:8px;margin-bottom:6px}
+  h2{font-size:14px;font-weight:600;margin:24px 0 8px;border-left:3px solid #7d7dff;padding-left:8px}
+  .note{font-size:12px;color:#b8b8cc;line-height:1.8}
+</style>
+</head>
+<body>
+<h1>実3D統一版（案1）フルサンプル — 188秒</h1>
+<p class="sub">イントロ（今日承認の12秒版）＋本編すべてを実3Dで統一。<br>
+・キャラは全編同一人物（実3Dなので原理保証）／サイズも連続<br>
+・肉体は静止、視点だけが動く（試作1と同じ）<br>
+・紫転び解消済み（原因は色空間変換バグ＋照明調整）</p>
+<video id="v" src="retune_bg_unified2.mp4" controls muted playsinline preload="metadata"></video>
+<div class="jump">
+  <button onclick="j(0)">0:00 イントロ</button>
+  <button onclick="j(15)">0:15 呼吸</button>
+  <button onclick="j(66)">1:06 分離</button>
+  <button onclick="j(107)">1:47 S4回転</button>
+  <button onclick="j(159)">2:39 S5帰還</button>
+  <button onclick="j(178)">2:58 S6着地</button>
+</div>
+<h2>これで良ければ</h2>
+<p class="note">「OK」で /v3/ をこの統一版に差し替えます（$0・5分）。<br>
+気になる点（明るさ・色・つなぎ）があれば言ってください — 照明・組立は全て手元で再調整できます（AI再生成は不要）。</p>
+<script>function j(t){var v=document.getElementById('v'); v.currentTime=t; v.play();}</script>
+</body>
+</html>
