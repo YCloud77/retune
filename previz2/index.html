@@ -4,63 +4,59 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
-<title>RETUNE — S4/S5 比較（試作1 vs 現行v3）</title>
+<title>RETUNE — S4/S5 新旧比較（2026-07-10更新）</title>
 <style>
   body{margin:0;background:#0a0a14;color:#e8e8f0;font-family:-apple-system,'Hiragino Sans',sans-serif;padding:20px 14px 60px}
-  h1{font-size:18px;font-weight:600;margin:6px 0 4px}
-  .sub{font-size:12px;color:#9a9ab0;margin:0 0 22px}
-  h2{font-size:15px;font-weight:600;margin:30px 0 4px;border-left:3px solid #7d7dff;padding-left:8px}
-  .desc{font-size:12px;color:#b8b8cc;margin:0 0 12px;padding-left:11px;line-height:1.7}
+  h1{font-size:17px;font-weight:600;margin:6px 0 4px}
+  .sub{font-size:12px;color:#9a9ab0;margin:0 0 20px;line-height:1.7}
+  h2{font-size:15px;font-weight:600;margin:28px 0 10px;border-left:3px solid #7d7dff;padding-left:8px}
   .pair{display:flex;gap:10px;flex-wrap:wrap}
-  .cell{flex:1 1 240px;min-width:200px;max-width:340px}
-  .cell .tag{font-size:12px;font-weight:600;margin:0 0 6px;text-align:center;padding:4px 0;border-radius:6px}
-  .tag.app{background:#1d3a2a;color:#8fe6b0}
-  .tag.v3{background:#3a2a1d;color:#e6c48f}
+  .cell{flex:1 1 220px;min-width:180px;max-width:300px}
+  .cell .tag{font-size:12px;font-weight:600;margin:0 0 6px;text-align:center;padding:5px 0;border-radius:6px}
+  .tag.old{background:#3a2a1d;color:#e6c48f}
+  .tag.new{background:#1d3a2a;color:#8fe6b0}
+  .tag.app{background:#22223a;color:#b8b8e6}
   video{width:100%;border-radius:10px;display:block;background:#000}
   .note{font-size:11px;color:#8888a0;margin-top:6px;line-height:1.6}
-  .choices{margin:16px 0 0;padding:12px 14px;background:#14141f;border-radius:10px;font-size:12px;line-height:1.9}
-  .choices b{color:#c8c8ff}
 </style>
 </head>
 <body>
-<h1>S4・S5 比較 — 試作1（アプリ実写）vs 現行v3</h1>
-<p class="sub">左＝試作1のアプリからそのまま収録（$0）／右＝現行v3のAI生成クリップ。音声なし・ループ再生。</p>
+<h1>S4・S5 新旧比較（B案清書 完成版）</h1>
+<p class="sub">今日（7/10）作り直した「新v3」と、指摘のあった「旧v3」、参考の「試作1」を並べています。<br>すべて同じ場面（S4=1:47〜2:39／S5=2:39〜2:58）の切り出しです。</p>
 
-<h2>S4 — 自由視座の軌道（1:47〜2:39 / 52秒）</h2>
-<p class="desc">試作1：カメラが半透明ボディの視点として動き、座った本体が水平360°→垂直360°（足裏が見える）と回る連続した軌道。<br>現行v3：指摘いただいた「キャラが大きすぎ・背面のまま垂直回転しない」問題のあるバージョン。</p>
+<h2>S4 — 連続回転（水平360°→垂直360°）</h2>
 <div class="pair">
   <div class="cell">
-    <div class="tag app">A：試作1 アプリ実写</div>
-    <video src="s4_app.mp4" controls muted playsinline loop preload="metadata"></video>
-    <div class="note">意味のある連続カメラ軌道（水平回転 1:47〜2:12 → 垂直回転 2:12〜2:39）</div>
+    <div class="tag new">✅ 新v3（今日の完成版）</div>
+    <video src="s4_new.mp4" controls muted playsinline loop preload="metadata"></video>
+    <div class="note">水平にひと回り→頭から後ろへ360°宙返り（足裏が上に見える）</div>
   </div>
   <div class="cell">
-    <div class="tag v3">現行v3（AI生成）</div>
+    <div class="tag old">❌ 旧v3（指摘があった版）</div>
     <video src="s4_v3.mp4" controls muted playsinline loop preload="metadata"></video>
-    <div class="note">現在公開中の /v3/ の同区間</div>
+    <div class="note">大きすぎ・背面のまま・垂直回転なし</div>
+  </div>
+  <div class="cell">
+    <div class="tag app">参考：試作1（アプリ実写）</div>
+    <video src="s4_app.mp4" controls muted playsinline loop preload="metadata"></video>
   </div>
 </div>
 
-<h2>S5 — 半透明ボディが本体へ戻る（2:39〜2:58 / 19秒）</h2>
-<p class="desc">試作1：<b>キャラクターの形をした</b>半透明ボディが、糸に導かれてゆっくり本体へ戻り、溶け込むと本体が柔らかく光る。<br>現行v3：「白い煙」のように見え、動きが不自然でスピリチュアルすぎると指摘のあったバージョン。</p>
+<h2>S5 — 半透明ボディの帰還</h2>
 <div class="pair">
   <div class="cell">
-    <div class="tag app">A：試作1 アプリ実写</div>
-    <video src="s5_app.mp4" controls muted playsinline loop preload="metadata"></video>
-    <div class="note">人型の半透明ボディが体へ帰還 → 溶け込み → 柔らかな発光</div>
+    <div class="tag new">✅ 新v3（今日の完成版）</div>
+    <video src="s5_new.mp4" controls muted playsinline loop preload="metadata"></video>
+    <div class="note">キャラ形のガラス質半透明ボディが糸に沿って戻り、溶け込むと発光</div>
   </div>
   <div class="cell">
-    <div class="tag v3">現行v3（AI生成）</div>
+    <div class="tag old">❌ 旧v3（白い煙）</div>
     <video src="s5_v3.mp4" controls muted playsinline loop preload="metadata"></video>
-    <div class="note">現在公開中の /v3/ の同区間（白い煙状）</div>
   </div>
-</div>
-
-<div class="choices">
-  シーンごとに選んでください：<br>
-  <b>A</b>：試作1のアプリ実写をそのまま v3 に使う（追加費用 $0）<br>
-  <b>B</b>：試作1の動き・構図を正として、AIで3DCG映画調に清書する（S4＋S5で約 $12〜17）<br>
-  <b>C</b>：現状維持
+  <div class="cell">
+    <div class="tag app">参考：試作1（アプリ実写）</div>
+    <video src="s5_app.mp4" controls muted playsinline loop preload="metadata"></video>
+  </div>
 </div>
 </body>
 </html>
