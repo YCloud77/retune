@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
-<title>RETUNE — S4/S5 新旧比較（2026-07-10更新）</title>
+<title>RETUNE — A案サンプル（アプリ実写・照明強化版）</title>
 <style>
   body{margin:0;background:#0a0a14;color:#e8e8f0;font-family:-apple-system,'Hiragino Sans',sans-serif;padding:20px 14px 60px}
   h1{font-size:17px;font-weight:600;margin:6px 0 4px}
@@ -13,49 +13,55 @@
   .pair{display:flex;gap:10px;flex-wrap:wrap}
   .cell{flex:1 1 220px;min-width:180px;max-width:300px}
   .cell .tag{font-size:12px;font-weight:600;margin:0 0 6px;text-align:center;padding:5px 0;border-radius:6px}
+  .tag.a{background:#1d3a2a;color:#8fe6b0}
   .tag.old{background:#3a2a1d;color:#e6c48f}
-  .tag.new{background:#1d3a2a;color:#8fe6b0}
-  .tag.app{background:#22223a;color:#b8b8e6}
+  .tag.raw{background:#22223a;color:#b8b8e6}
   video{width:100%;border-radius:10px;display:block;background:#000}
   .note{font-size:11px;color:#8888a0;margin-top:6px;line-height:1.6}
 </style>
 </head>
 <body>
-<h1>S4・S5 新旧比較（B案清書 完成版）</h1>
-<p class="sub">今日（7/10）作り直した「新v3」と、指摘のあった「旧v3」、参考の「試作1」を並べています。<br>すべて同じ場面（S4=1:47〜2:39／S5=2:39〜2:58）の切り出しです。</p>
+<h1>A案サンプル — アプリ実写（3D照明を映画調に強化）</h1>
+<p class="sub">キャラは全シーン同一人物（実3Dなので原理的に変わりません）。肉体は彫像のように静止し、視点だけが巡ります。<br>「A案」列は3Dシーンの照明を強化して再収録したものです（AI生成は不使用）。</p>
 
-<h2>S4 — 連続回転（水平360°→垂直360°）</h2>
+<h2>S4 — 自由視座の回転（1:47〜2:39）</h2>
 <div class="pair">
   <div class="cell">
-    <div class="tag new">✅ 新v3（今日の完成版）</div>
-    <video src="s4_new.mp4" controls muted playsinline loop preload="metadata"></video>
-    <div class="note">水平にひと回り→頭から後ろへ360°宙返り（足裏が上に見える）</div>
+    <div class="tag a">✅ A案（照明強化・提案版）</div>
+    <video src="s4_a.mp4" controls muted playsinline loop preload="metadata"></video>
   </div>
   <div class="cell">
-    <div class="tag old">❌ 旧v3（指摘があった版）</div>
-    <video src="s4_v3.mp4" controls muted playsinline loop preload="metadata"></video>
-    <div class="note">大きすぎ・背面のまま・垂直回転なし</div>
-  </div>
-  <div class="cell">
-    <div class="tag app">参考：試作1（アプリ実写）</div>
+    <div class="tag raw">試作1そのまま（暗い）</div>
     <video src="s4_app.mp4" controls muted playsinline loop preload="metadata"></video>
+  </div>
+  <div class="cell">
+    <div class="tag old">旧v3（参考）</div>
+    <video src="s4_v3.mp4" controls muted playsinline loop preload="metadata"></video>
   </div>
 </div>
 
-<h2>S5 — 半透明ボディの帰還</h2>
+<h2>S5 — 半透明ボディの帰還（2:39〜2:58）</h2>
 <div class="pair">
   <div class="cell">
-    <div class="tag new">✅ 新v3（今日の完成版）</div>
-    <video src="s5_new.mp4" controls muted playsinline loop preload="metadata"></video>
-    <div class="note">キャラ形のガラス質半透明ボディが糸に沿って戻り、溶け込むと発光</div>
+    <div class="tag a">✅ A案（照明強化・提案版）</div>
+    <video src="s5_a.mp4" controls muted playsinline loop preload="metadata"></video>
   </div>
   <div class="cell">
-    <div class="tag old">❌ 旧v3（白い煙）</div>
+    <div class="tag raw">試作1そのまま（暗い）</div>
+    <video src="s5_app.mp4" controls muted playsinline loop preload="metadata"></video>
+  </div>
+  <div class="cell">
+    <div class="tag old">旧v3（白い煙・参考）</div>
     <video src="s5_v3.mp4" controls muted playsinline loop preload="metadata"></video>
   </div>
-  <div class="cell">
-    <div class="tag app">参考：試作1（アプリ実写）</div>
-    <video src="s5_app.mp4" controls muted playsinline loop preload="metadata"></video>
+</div>
+
+<h2>つなぎ目の確認（1:40〜1:55 / 旧S3→A案S4への切替）</h2>
+<div class="pair">
+  <div class="cell" style="max-width:340px">
+    <div class="tag a">境界プレビュー（1.2秒クロスフェード）</div>
+    <video src="boundary_a.mp4" controls muted playsinline loop preload="metadata"></video>
+    <div class="note">前半＝現行v3のS3（AI映像）→ 後半＝A案のS4（実3D）。画風の切り替わり具合をご確認ください。</div>
   </div>
 </div>
 </body>
