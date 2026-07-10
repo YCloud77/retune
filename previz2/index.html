@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>RETUNE — S4/S5 比較（試作1 vs 現行v3）</title>
+<style>
+  body{margin:0;background:#0a0a14;color:#e8e8f0;font-family:-apple-system,'Hiragino Sans',sans-serif;padding:20px 14px 60px}
+  h1{font-size:18px;font-weight:600;margin:6px 0 4px}
+  .sub{font-size:12px;color:#9a9ab0;margin:0 0 22px}
+  h2{font-size:15px;font-weight:600;margin:30px 0 4px;border-left:3px solid #7d7dff;padding-left:8px}
+  .desc{font-size:12px;color:#b8b8cc;margin:0 0 12px;padding-left:11px;line-height:1.7}
+  .pair{display:flex;gap:10px;flex-wrap:wrap}
+  .cell{flex:1 1 240px;min-width:200px;max-width:340px}
+  .cell .tag{font-size:12px;font-weight:600;margin:0 0 6px;text-align:center;padding:4px 0;border-radius:6px}
+  .tag.app{background:#1d3a2a;color:#8fe6b0}
+  .tag.v3{background:#3a2a1d;color:#e6c48f}
+  video{width:100%;border-radius:10px;display:block;background:#000}
+  .note{font-size:11px;color:#8888a0;margin-top:6px;line-height:1.6}
+  .choices{margin:16px 0 0;padding:12px 14px;background:#14141f;border-radius:10px;font-size:12px;line-height:1.9}
+  .choices b{color:#c8c8ff}
+</style>
+</head>
+<body>
+<h1>S4・S5 比較 — 試作1（アプリ実写）vs 現行v3</h1>
+<p class="sub">左＝試作1のアプリからそのまま収録（$0）／右＝現行v3のAI生成クリップ。音声なし・ループ再生。</p>
+
+<h2>S4 — 自由視座の軌道（1:47〜2:39 / 52秒）</h2>
+<p class="desc">試作1：カメラが半透明ボディの視点として動き、座った本体が水平360°→垂直360°（足裏が見える）と回る連続した軌道。<br>現行v3：指摘いただいた「キャラが大きすぎ・背面のまま垂直回転しない」問題のあるバージョン。</p>
+<div class="pair">
+  <div class="cell">
+    <div class="tag app">A：試作1 アプリ実写</div>
+    <video src="s4_app.mp4" controls muted playsinline loop preload="metadata"></video>
+    <div class="note">意味のある連続カメラ軌道（水平回転 1:47〜2:12 → 垂直回転 2:12〜2:39）</div>
+  </div>
+  <div class="cell">
+    <div class="tag v3">現行v3（AI生成）</div>
+    <video src="s4_v3.mp4" controls muted playsinline loop preload="metadata"></video>
+    <div class="note">現在公開中の /v3/ の同区間</div>
+  </div>
+</div>
+
+<h2>S5 — 半透明ボディが本体へ戻る（2:39〜2:58 / 19秒）</h2>
+<p class="desc">試作1：<b>キャラクターの形をした</b>半透明ボディが、糸に導かれてゆっくり本体へ戻り、溶け込むと本体が柔らかく光る。<br>現行v3：「白い煙」のように見え、動きが不自然でスピリチュアルすぎると指摘のあったバージョン。</p>
+<div class="pair">
+  <div class="cell">
+    <div class="tag app">A：試作1 アプリ実写</div>
+    <video src="s5_app.mp4" controls muted playsinline loop preload="metadata"></video>
+    <div class="note">人型の半透明ボディが体へ帰還 → 溶け込み → 柔らかな発光</div>
+  </div>
+  <div class="cell">
+    <div class="tag v3">現行v3（AI生成）</div>
+    <video src="s5_v3.mp4" controls muted playsinline loop preload="metadata"></video>
+    <div class="note">現在公開中の /v3/ の同区間（白い煙状）</div>
+  </div>
+</div>
+
+<div class="choices">
+  シーンごとに選んでください：<br>
+  <b>A</b>：試作1のアプリ実写をそのまま v3 に使う（追加費用 $0）<br>
+  <b>B</b>：試作1の動き・構図を正として、AIで3DCG映画調に清書する（S4＋S5で約 $12〜17）<br>
+  <b>C</b>：現状維持
+</div>
+</body>
+</html>
