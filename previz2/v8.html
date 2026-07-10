@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>RETUNE — イントロcut05/06リテイク（v8候補）</title>
+<style>
+  body{margin:0;background:#0a0a14;color:#e8e8f0;font-family:-apple-system,'Hiragino Sans',sans-serif;padding:20px 14px 60px}
+  h1{font-size:17px;font-weight:600;margin:6px 0 4px}
+  .sub{font-size:12px;color:#9a9ab0;margin:0 0 16px;line-height:1.8}
+  video{width:100%;max-width:340px;border-radius:10px;display:block;background:#000}
+  .jump{margin:10px 0 24px}
+  .jump button{background:#22224a;color:#c8c8ff;border:none;border-radius:8px;padding:8px 12px;font-size:12px;margin-right:8px;margin-bottom:6px}
+  h2{font-size:14px;font-weight:600;margin:24px 0 8px;border-left:3px solid #7d7dff;padding-left:8px}
+  .note{font-size:12px;color:#b8b8cc;line-height:1.8}
+  img{width:100%;max-width:340px;border-radius:10px;display:block}
+</style>
+</head>
+<body>
+<h1>イントロcut05/06リテイク — v8候補（188秒）</h1>
+<p class="sub">変更は<b>イントロの6.6〜9.0秒だけ</b>。それ以外（14秒以降の本編すべて）は現行v7と完全に同一です。<br>
+・cut05（一軒の家 0.6秒）: 「壁に見える箱」→ 地面が四方に見える<b>真俯瞰の一軒家＋窓の光</b><br>
+・cut06（頭頂 1.8秒）: 銀髪 → <b>ダークチャコール</b>（構図・ポーズはそのまま）</p>
+<video id="v" src="retune_bg_v8.mp4" controls muted playsinline preload="metadata"></video>
+<div class="jump">
+  <button onclick="j(0)">0:00 イントロ頭から</button>
+  <button onclick="j(6.0)">0:06 cut05 家</button>
+  <button onclick="j(7.2)">0:07 cut06 頭頂</button>
+  <button onclick="j(14)">0:14 本編（不変）</button>
+</div>
+<h2>新旧比較（左から: 旧05 / 新05 / 旧06 / 新06）</h2>
+<img src="compare_v8.png" alt="新旧比較">
+<h2>これで良ければ</h2>
+<p class="note">「OK」で /v3/ をv8に差し替えます（追加費用$0・5分）。<br>
+気になる点があればスチルから再生成できます（各$1弱）。</p>
+<script>function j(t){var v=document.getElementById('v'); v.currentTime=t; v.play();}</script>
+</body>
+</html>
