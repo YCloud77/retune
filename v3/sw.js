@@ -1,6 +1,6 @@
 // RETUNE service worker — makes the installed app launch instantly and work OFFLINE.
 // Bump CACHE when any asset changes so returning users pull the new version.
-var CACHE = 'retune-v3-11';
+var CACHE = 'retune-v3-12';
 var CORE = [
   './',
   './index.html',
@@ -43,6 +43,36 @@ self.addEventListener('fetch', function(e){
   if(req.method !== 'GET'){ return; }
   var url = new URL(req.url);
   if(url.origin !== self.location.origin){ return; }   // let CDN & analytics go to network
+  // Media elements (video/bgm/narration) ask for byte ranges, and WebKit — especially the
+  // installed PWA launched offline — requires a real 206; a cached full-200 body breaks playback.
+  // The Cache API only stores full responses, so slice the cached body ourselves.
+  var range = req.headers.get('range');
+  if(range){
+    e.respondWith(
+      caches.match(req.url).then(function(hit){
+        if(!hit) return fetch(req);   // network answers range requests itself
+        return hit.arrayBuffer().then(function(buf){
+          var m = /bytes=(\d*)-(\d*)/.exec(range) || [];
+          var size = buf.byteLength;
+          var start = m[1] ? parseInt(m[1],10) : Math.max(0, size - (parseInt(m[2],10) || 0));
+          var end = (m[1] && m[2]) ? Math.min(parseInt(m[2],10), size-1) : size-1;
+          if(start > end || start >= size){
+            return new Response(null, {status:416, headers:{'Content-Range':'bytes */'+size}});
+          }
+          return new Response(buf.slice(start, end+1), {
+            status:206, statusText:'Partial Content',
+            headers:{
+              'Content-Type': hit.headers.get('Content-Type') || 'application/octet-stream',
+              'Content-Range': 'bytes '+start+'-'+end+'/'+size,
+              'Content-Length': String(end-start+1),
+              'Accept-Ranges': 'bytes'
+            }
+          });
+        });
+      })
+    );
+    return;
+  }
   var isHTML = req.mode === 'navigate' || url.pathname === '/' || url.pathname.endsWith('/') || url.pathname.endsWith('.html');
   if(isHTML){
     e.respondWith(
