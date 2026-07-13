@@ -1,6 +1,6 @@
 // RETUNE service worker — makes the installed app launch instantly and work OFFLINE.
 // Bump CACHE when any asset changes so returning users pull the new version.
-var CACHE = 'retune-v3-12';
+var CACHE = 'retune-v3-13';
 var CORE = [
   './',
   './index.html',
